@@ -43,7 +43,7 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
-  // Notify parent on any filter change
+  // Notify parent on filter change
   useEffect(() => {
     onFilterChange({
       category: category === "All" ? null : category,
@@ -52,17 +52,23 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
     });
   }, [category, subcategory, search, onFilterChange]);
 
-  // Sync initial filter from URL params
+  // Sync initialFilter from parent / URL params without infinite loop
   useEffect(() => {
-    if (initialFilter) {
-      if (initialFilter.category) setCategory(initialFilter.category);
-      if (initialFilter.subcategory) setSubcategory(initialFilter.subcategory);
-      if (initialFilter.search) {
-        setSearch(initialFilter.search);
-        setIsSearchOpen(true);
+    if (!initialFilter) return;
+    const targetCat = initialFilter.category || "All";
+    const targetSub = initialFilter.subcategory || "All";
+    const targetSearch = initialFilter.search || "";
+
+    setCategory((prev) => (prev !== targetCat ? targetCat : prev));
+    setSubcategory((prev) => (prev !== targetSub ? targetSub : prev));
+    setSearch((prev) => {
+      if (prev !== targetSearch) {
+        if (targetSearch) setIsSearchOpen(true);
+        return targetSearch;
       }
-    }
-  }, [initialFilter]);
+      return prev;
+    });
+  }, [initialFilter?.category, initialFilter?.subcategory, initialFilter?.search]);
 
   // Focus input when search bar opens
   useEffect(() => {
@@ -103,6 +109,33 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
   const isSubcategoryActive = subcategory !== "All";
   const isSearchActive = Boolean(search || isSearchOpen);
 
+  const scrollToCenter = (element: HTMLElement | null) => {
+    if (!element || !dockRef.current) return;
+    const container = dockRef.current;
+    const elementLeft = element.offsetLeft;
+    const elementWidth = element.offsetWidth;
+    const containerWidth = container.offsetWidth;
+
+    const targetScrollLeft = elementLeft - containerWidth / 2 + elementWidth / 2;
+
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    if (dockRef.current) {
+      const timer = setTimeout(() => {
+        const activeButton = dockRef.current?.querySelector('[data-active="true"]') as HTMLElement | null;
+        if (activeButton) {
+          scrollToCenter(activeButton);
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [category]);
+
   return (
     <div ref={filterRef} className="relative w-full max-w-5xl mx-auto flex flex-col items-center z-30 px-4">
       
@@ -120,9 +153,11 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
             return (
               <button
                 key={cat}
-                onClick={() => {
+                data-active={isActive}
+                onClick={(e) => {
                   setCategory(cat);
                   setSubcategory("All");
+                  scrollToCenter(e.currentTarget);
                 }}
                 className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 whitespace-nowrap z-10 select-none shrink-0 ${
                   isActive
@@ -263,5 +298,3 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
     </div>
   );
 }
-
-

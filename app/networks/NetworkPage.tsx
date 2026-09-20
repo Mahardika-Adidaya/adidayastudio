@@ -1,12 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import ContactSection from "./ContactSection";
 import CareerSection from "./CareerSection";
 
 export default function NetworkPage() {
   const [activeTab, setActiveTab] = useState<"contact" | "career">("contact");
+  const dockRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCenter = (element: HTMLElement | null) => {
+    if (!element || !dockRef.current) return;
+    const container = dockRef.current;
+    const elementLeft = element.offsetLeft;
+    const elementWidth = element.offsetWidth;
+    const containerWidth = container.offsetWidth;
+
+    const targetScrollLeft = elementLeft - containerWidth / 2 + elementWidth / 2;
+
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <main className="min-h-screen bg-adidaya-black text-white flex flex-col items-center pt-16 pb-24">
@@ -16,9 +32,15 @@ export default function NetworkPage() {
       </h1>
 
       {/* Tabs */}
-      <div className="border border-adidaya-red rounded-full p-2 flex gap-3 mb-16 overflow-x-auto no-scrollbar max-w-full relative">
+      <div
+        ref={dockRef}
+        className="border border-adidaya-red rounded-full p-2 flex gap-3 mb-16 overflow-x-auto no-scrollbar max-w-full relative"
+      >
         <button
-          onClick={() => setActiveTab("contact")}
+          onClick={(e) => {
+            setActiveTab("contact");
+            scrollToCenter(e.currentTarget);
+          }}
           className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 z-10 select-none
             ${
               activeTab === "contact"
@@ -38,7 +60,10 @@ export default function NetworkPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("career")}
+          onClick={(e) => {
+            setActiveTab("career");
+            scrollToCenter(e.currentTarget);
+          }}
           className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 z-10 select-none
             ${
               activeTab === "career"
