@@ -1,9 +1,19 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import useUserProfile from "@/hooks/useUserProfile";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  ArrowUpDown,
+  Check,
+  X,
+} from "lucide-react";
 
 import {
   DndContext,
@@ -389,6 +399,57 @@ export default function AdminProjectListPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("order");
 
+  // Dropdown & Search state
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  // Focus input when search bar opens
+  useEffect(() => {
+    if (isSearchOpen) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isSearchOpen]);
+
+  // Click outside and escape key handling
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsFilterOpen(false);
+        setIsSortOpen(false);
+        if (isSearchOpen && !search) {
+          setIsSearchOpen(false);
+        }
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSearchOpen, search]);
+
+  const isSearchActive = Boolean(search || isSearchOpen);
+  const isFilterActive = categoryFilter !== "all" || isFilterOpen;
+  const isSortActive = sortKey !== "order" || statusFilter !== "all" || isSortOpen;
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -571,120 +632,301 @@ export default function AdminProjectListPage() {
 
   /* ------------------ Render ------------------ */
   return (
-    <div className="min-h-screen bg-black pb-12 pt-6 text-gray-100">
-      <div className="mx-auto flex w-full max-w-5xl flex-col px-4">
-        {/* HEADER */}
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      {/* 1. HEADER */}
+      <header className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
             Admin • Projects
-          </p>
-
-          <div className="mt-2 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="mb-2 text-3xl font-semibold text-white">
-                <span className="mr-2 text-adidaya-red">*</span>
-                Projects
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Back to Dashboard */}
-              <button
-                onClick={() => router.push("/admin")}
-                className="rounded-full border border-gray-700 bg-black px-6 py-2.5 text-sm font-semibold text-gray-200 hover:text-adidaya-red hover:border-adidaya-red"
-              >
-                ← Back to Dashboard
-              </button>
-
-              {/* New Project (semua role boleh create) */}
-              <button
-                onClick={() => router.push("/admin/projects/create")}
-                className="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:bg-adidaya-red hover:text-white"
-              >
-                + Create Project
-              </button>
-            </div>
-          </div>
+          </span>
         </div>
 
-        {/* FILTERS */}
-        <div className="mb-8 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status pills */}
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#0d0d0d] px-1 py-1 border border-neutral-800">
-              {(["all", "draft", "published"] as StatusFilter[]).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-1 rounded-full text-[11px] uppercase tracking-[0.14em] ${
-                    statusFilter === s
-                      ? "bg-white text-black"
-                      : "text-neutral-400"
-                  }`}
-                >
-                  {s === "all" ? "All" : s === "draft" ? "Draft" : "Published"}
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-white flex items-center gap-2 tracking-tight">
+            <span className="text-adidaya-red font-bold">*</span> Projects
+          </h1>
+          <p className="text-sm text-adidaya-text-muted">
+            Manage architectural portfolio, client credentials, project metadata, team credits, and public gallery visibility.
+          </p>
+        </div>
+      </header>
 
-            {/* Sort pills */}
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#0d0d0d] px-2 py-1 border border-neutral-800">
-              <span className="text-[11px] text-neutral-500 uppercase tracking-[0.14em] mr-1">
-                Sort
-              </span>
-              {(["order", "created_at", "updated_at"] as SortKey[]).map(
-                (key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSortKey(key)}
-                    className={`px-3 py-1 rounded-full text-[11px] uppercase tracking-[0.14em] ${
-                      sortKey === key
-                        ? "bg-white text-black"
-                        : "text-neutral-400"
-                    }`}
-                  >
-                    {key === "order"
-                      ? "Order"
-                      : key === "created_at"
-                      ? "Date Added"
-                      : "Last Modified"}
-                  </button>
-                )
+      {/* 2. SUBHEADER ACTION BAR (KIRI: Back to Dashboard, KANAN: Filters, Sort, Search, Live Preview, Create Project) */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-white/10">
+        {/* KIRI: Back to Dashboard */}
+        <button
+          onClick={() => router.push("/admin")}
+          className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 select-none group w-fit shadow-sm"
+        >
+          <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
+          <span>Back to Dashboard</span>
+        </button>
+
+        {/* KANAN: Search, Filter, Sort, Live Preview, Create Project */}
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
+          {/* SEARCH BUTTON */}
+          <button
+            onClick={() => {
+              setIsSearchOpen((prev) => !prev);
+              setIsFilterOpen(false);
+              setIsSortOpen(false);
+            }}
+            aria-label="Toggle search"
+            className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center relative select-none backdrop-blur-md shrink-0 shadow-sm ${
+              isSearchActive
+                ? "border border-adidaya-red bg-white/[0.04] shadow-[0_0_15px_rgba(229,57,53,0.3)] text-adidaya-red"
+                : "border border-white/10 bg-white/[0.04] text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/[0.08]"
+            }`}
+          >
+            <Search size={16} strokeWidth={1.5} />
+            {search && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-adidaya-red ring-2 ring-black" />
+            )}
+          </button>
+
+          {/* CATEGORY FILTER BUTTON */}
+          <div ref={filterRef} className="relative shrink-0">
+            <button
+              onClick={() => {
+                setIsFilterOpen((prev) => !prev);
+                setIsSortOpen(false);
+              }}
+              aria-label="Filter category"
+              className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center relative select-none backdrop-blur-md shrink-0 shadow-sm ${
+                isFilterActive
+                  ? "border border-adidaya-red bg-white/[0.04] shadow-[0_0_15px_rgba(229,57,53,0.3)] text-adidaya-red"
+                  : "border border-white/10 bg-white/[0.04] text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/[0.08]"
+              }`}
+            >
+              <SlidersHorizontal size={16} strokeWidth={1.5} />
+              {categoryFilter !== "all" && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-adidaya-red ring-2 ring-black" />
               )}
-            </div>
+            </button>
+
+            {/* CATEGORY DROPDOWN MENU */}
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-3 w-60 sm:w-64 bg-[#121212]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-2 shadow-2xl shadow-black/80 z-50 max-w-[calc(100vw-32px)]"
+                >
+                  <div className="px-3 py-2 text-[10px] uppercase font-mono tracking-widest text-neutral-400 border-b border-white/10 mb-1.5 flex items-center justify-between">
+                    <span>Filter Categories</span>
+                    {categoryFilter !== "all" && (
+                      <button
+                        onClick={() => {
+                          setCategoryFilter("all");
+                          setIsFilterOpen(false);
+                        }}
+                        className="text-adidaya-red hover:underline capitalize font-sans text-xs"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-72 overflow-y-auto space-y-1 no-scrollbar p-0.5">
+                    <button
+                      onClick={() => {
+                        setCategoryFilter("all");
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center justify-between transition-colors ${
+                        categoryFilter === "all"
+                          ? "text-adidaya-red font-semibold bg-white/[0.08]"
+                          : "text-gray-300 hover:text-white hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <span>All Categories</span>
+                      {categoryFilter === "all" && (
+                        <Check size={14} className="text-adidaya-red shrink-0 ml-2" />
+                      )}
+                    </button>
+                    {categories.map((cat) => {
+                      const isActive = categoryFilter === cat;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setCategoryFilter(cat);
+                            setIsFilterOpen(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center justify-between transition-colors ${
+                            isActive
+                              ? "text-adidaya-red font-semibold bg-white/[0.08]"
+                              : "text-gray-300 hover:text-white hover:bg-white/[0.06]"
+                          }`}
+                        >
+                          <span className="truncate">{cat}</span>
+                          {isActive && (
+                            <Check size={14} className="text-adidaya-red shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 justify-between">
-            {/* Category select */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="appearance-none rounded-full bg-[#0d0d0d] border border-gray-800 px-4 py-2.5 text-xs uppercase tracking-[0.14em] text-gray-300 focus:border-gray-600 transition"
+          {/* SORT & STATUS BUTTON */}
+          <div ref={sortRef} className="relative shrink-0">
+            <button
+              onClick={() => {
+                setIsSortOpen((prev) => !prev);
+                setIsFilterOpen(false);
+              }}
+              aria-label="Sort and Status"
+              className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center relative select-none backdrop-blur-md shrink-0 shadow-sm ${
+                isSortActive
+                  ? "border border-adidaya-red bg-white/[0.04] shadow-[0_0_15px_rgba(229,57,53,0.3)] text-adidaya-red"
+                  : "border border-white/10 bg-white/[0.04] text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/[0.08]"
+              }`}
             >
-              <option value="all">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              <ArrowUpDown size={16} strokeWidth={1.5} />
+              {(sortKey !== "order" || statusFilter !== "all") && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-adidaya-red ring-2 ring-black" />
+              )}
+            </button>
 
-            {/* Search */}
-            <div className="relative w-full sm:w-64">
+            {/* SORT & STATUS DROPDOWN MENU */}
+            <AnimatePresence>
+              {isSortOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-3 w-64 bg-[#121212]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-2.5 shadow-2xl shadow-black/80 z-50 max-w-[calc(100vw-32px)]"
+                >
+                  {/* Status Section */}
+                  <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-widest text-neutral-400">
+                    Status
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 mb-3 p-0.5 bg-black/40 rounded-xl border border-white/5">
+                    {(["all", "draft", "published"] as StatusFilter[]).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setStatusFilter(s)}
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-medium uppercase tracking-wider text-center transition-all ${
+                          statusFilter === s
+                            ? "bg-adidaya-red text-white font-semibold shadow-sm"
+                            : "text-neutral-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        {s === "all" ? "All" : s === "draft" ? "Draft" : "Pub"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Sort Section */}
+                  <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-widest text-neutral-400 border-t border-white/10 pt-2">
+                    Sort By
+                  </div>
+                  <div className="space-y-1 p-0.5">
+                    {[
+                      { key: "order" as SortKey, label: "Manual Order (DnD)" },
+                      { key: "created_at" as SortKey, label: "Date Added" },
+                      { key: "updated_at" as SortKey, label: "Last Modified" },
+                    ].map((item) => {
+                      const isActive = sortKey === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          onClick={() => {
+                            setSortKey(item.key);
+                          }}
+                          className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition-colors ${
+                            isActive
+                              ? "text-adidaya-red font-semibold bg-white/[0.08]"
+                              : "text-gray-300 hover:text-white hover:bg-white/[0.06]"
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          {isActive && (
+                            <Check size={14} className="text-adidaya-red shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* LIVE PREVIEW BUTTON */}
+          <button
+            onClick={() => window.open("/projects", "_blank")}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 select-none group shadow-sm"
+          >
+            <span>Live Preview</span>
+            <ExternalLink
+              size={12}
+              strokeWidth={1.5}
+              className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+            />
+          </button>
+
+          {/* CREATE PROJECT BUTTON */}
+          <button
+            onClick={() => router.push("/admin/projects/create")}
+            className="rounded-full px-5 py-2.5 text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all select-none bg-white text-black hover:bg-adidaya-red hover:text-white hover:shadow-[0_0_20px_rgba(229,57,53,0.4)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            <Plus size={14} strokeWidth={2} />
+            <span>Create Project</span>
+          </button>
+        </div>
+      </div>
+
+      {/* FLOATING / EXPANDABLE SEARCH BAR */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="mb-6 w-full max-w-lg mx-auto z-30"
+          >
+            <div className="flex items-center w-full bg-white/[0.05] border border-white/15 backdrop-blur-md rounded-full px-4 py-2.5 shadow-lg shadow-black/40">
+              <Search size={16} className="text-adidaya-red shrink-0 mr-3" strokeWidth={1.5} />
               <input
+                ref={searchInputRef}
+                type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search project..."
-                className="w-full rounded-full bg-[#0d0d0d] border border-gray-800 px-4 py-2.5 text-sm text-gray-200 placeholder:text-gray-500 focus:border-gray-600 outline-none"
+                placeholder="Search projects by name or slug..."
+                className="w-full min-w-0 bg-transparent text-xs sm:text-sm text-white placeholder:text-adidaya-text-muted outline-none"
               />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 text-[11px] tracking-[0.14em]">
-                SEARCH
-              </span>
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                  className="p-1 text-adidaya-text-muted hover:text-white rounded-full hover:bg-white/10 transition shrink-0 mr-1"
+                >
+                  <X size={14} strokeWidth={1.5} />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setIsSearchOpen(false);
+                }}
+                aria-label="Close search bar"
+                className="p-1 text-adidaya-text-muted hover:text-white rounded-full hover:bg-white/10 transition shrink-0 select-none"
+              >
+                <X size={16} strokeWidth={1.5} />
+              </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
         {/* LIST */}
         {loading ? (
@@ -783,6 +1025,5 @@ export default function AdminProjectListPage() {
           )}
         </AnimatePresence>
       </div>
-    </div>
-  );
-}
+    );
+  }
