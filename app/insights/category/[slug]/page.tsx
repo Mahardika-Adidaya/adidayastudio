@@ -64,7 +64,7 @@ export default function CategoryPage() {
 
   /** CHANGE CATEGORY ACTION */
   const handleCategoryChange = (value: string) => {
-    router.push(`/insight/category/${value}`);
+    router.push(`/insights/category/${value}`);
   };
 
 return (
@@ -73,7 +73,7 @@ return (
 
       {/* HEADER */}
       <p className="text-xs uppercase tracking-[0.18em] text-gray-500 mb-2">
-        INSIGHT • CATEGORY
+        INSIGHTS • CATEGORY
       </p>
 
       <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
@@ -147,7 +147,7 @@ return (
           return (
             <Link
               key={insight.id}
-              href={`/insight/${insight.slug}`}
+              href={`/insights/${insight.slug}`}
               className="rounded-3xl overflow-hidden bg-[#121212] 
                 border border-white/5 hover:border-white/20
                 hover:bg-[#1a1a1a] transition duration-300"

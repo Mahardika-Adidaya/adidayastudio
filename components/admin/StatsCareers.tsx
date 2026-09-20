@@ -84,7 +84,7 @@ export default function StatsCareers() {
         </button>
 
         <button
-          onClick={() => window.open("/network", "_blank")}
+          onClick={() => window.open("/networks", "_blank")}
           className="text-[11px] uppercase tracking-[0.16em] text-gray-500 hover:text-adidaya-red"
         >
           Preview

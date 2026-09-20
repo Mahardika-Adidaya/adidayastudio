@@ -97,7 +97,7 @@ export default function InsightPage() {
   return (
     <div className="min-h-screen bg-black text-white px-6 lg:px-20 py-16">
       <h1 className="text-center text-5xl font-bold mb-12 tracking-tight">
-        <span className="text-adidaya-red">*</span> Insight
+        <span className="text-adidaya-red">*</span> Insights
       </h1>
 
       {/* FILTER BAR */}

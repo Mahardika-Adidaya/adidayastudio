@@ -12,7 +12,7 @@ export default function InsightCard({ item }: any) {
       : `${Math.ceil(item.reading_time)} min read`;
 
   return (
-    <Link href={`/insight/${item.slug}`}>
+    <Link href={`/insights/${item.slug}`}>
       <div className="group bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-neutral-600 transition">
         
         {/* IMAGE */}

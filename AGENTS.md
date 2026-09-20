@@ -15,3 +15,6 @@
    - Frosted glass cards: `bg-white/[0.04] backdrop-blur-md border border-white/10`.
    - Accent color: `text-adidaya-red` / `stroke-adidaya-red` (`#e53935`).
    - Iconography: Lucide React with uniform `strokeWidth={1.5}`.
+
+4. **No Browser / Chrome Without Explicit Request**:
+   - NEVER open Chrome, browser subagents, or automated browser testing unless explicitly instructed by the user.

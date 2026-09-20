@@ -82,16 +82,29 @@ function ProjectsPage() {
     fetchProjects();
   }, [filter]);
 
+  const filteredProjects = projects.filter((p) => {
+    if (!filter.search) return true;
+    const q = filter.search.toLowerCase();
+    return (
+      p.project_name?.toLowerCase().includes(q) ||
+      p.city?.toLowerCase().includes(q) ||
+      p.country?.toLowerCase().includes(q) ||
+      p.slug?.toLowerCase().includes(q) ||
+      p.categories?.some((c) => c.toLowerCase().includes(q)) ||
+      p.subcategories?.some((s) => s.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="min-h-screen bg-black text-white px-6 lg:px-20 py-16">
       <ProjectSectionHeader title="Projects" />
       <FilterBar onFilterChange={setFilter} initialFilter={filter} />
 
-      {projects.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <p className="text-center text-gray-500 mt-20">No projects found.</p>
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 mt-12 space-y-8">
-          {projects.map((p) => (
+          {filteredProjects.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}
         </div>

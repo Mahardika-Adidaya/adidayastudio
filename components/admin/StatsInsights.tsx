@@ -87,7 +87,7 @@ export default function StatsInsights() {
           Manage Insights
         </button>
         <button
-          onClick={() => window.open("/insight", "_blank")}
+          onClick={() => window.open("/insights", "_blank")}
           className="text-[11px] uppercase tracking-[0.16em] text-gray-500 hover:text-adidaya-red"
         >
           Preview

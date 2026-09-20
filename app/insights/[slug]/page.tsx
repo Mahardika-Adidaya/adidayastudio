@@ -124,7 +124,7 @@ export default function InsightDetail() {
               {/* CATEGORY (CLICKABLE) */}
               <div className="mb-3">
                 <Link
-                  href={`/insight/category/${slugify(insight.category)}`}
+                  href={`/insights/category/${slugify(insight.category)}`}
                   className="inline-flex items-center rounded-full bg-adidaya-red px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-adidaya-red/80 transition"
                 >
                   {insight.category}
@@ -163,7 +163,7 @@ export default function InsightDetail() {
               {insight.tags.map((tag) => (
                 <Link
                   key={tag}
-                  href={`/insight/tag/${slugify(tag)}`}
+                  href={`/insights/tag/${slugify(tag)}`}
                   className="px-4 py-1 bg-neutral-800 text-gray-200 rounded-full text-[11px] uppercase tracking-[0.15em] hover:bg-neutral-700 transition"
                 >
                   {tag}

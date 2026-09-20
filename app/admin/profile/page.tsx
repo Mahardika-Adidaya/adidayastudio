@@ -199,7 +199,7 @@ export default function AdminProfilePage() {
             {insights.map((i) => (
               <Link
                 key={i.id}
-                href={`/insight/${i.slug || i.id}`}
+                href={`/insights/${i.slug || i.id}`}
                 target="_blank"
                 className="block p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]
                            hover:bg-white/[0.06] transition text-gray-300 text-sm"

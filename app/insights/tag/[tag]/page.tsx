@@ -69,7 +69,7 @@ export default function TagPage() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    router.push(`/insight/tag/${query.trim().toLowerCase()}`);
+    router.push(`/insights/tag/${query.trim().toLowerCase()}`);
   }
 
   /* ============================
@@ -81,7 +81,7 @@ export default function TagPage() {
 
         {/* BREADCRUMB */}
         <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-1">
-          Insight • Tags
+          Insights • Tags
         </p>
 
         {/* HEADER + SEARCH */}
@@ -137,7 +137,7 @@ export default function TagPage() {
               return (
                 <Link
                   key={item.id}
-                  href={`/insight/${item.slug}`}
+                  href={`/insights/${item.slug}`}
                   className="block rounded-2xl overflow-hidden bg-[#111]/60 border border-white/5 hover:border-adidaya-red transition-all shadow-xl"
                 >
                   {/* IMAGE */}

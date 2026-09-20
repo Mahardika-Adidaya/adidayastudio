@@ -11,9 +11,9 @@ import MobileMenu from "./MobileMenu";
 const navItems = [
   { href: "/", label: "Intro" },
   { href: "/studio", label: "Studio" },
-  { href: "/projects", label: "Project" },
-  { href: "/insight", label: "Insight" },
-  { href: "/network", label: "Network" },
+  { href: "/projects", label: "Projects" },
+  { href: "/insights", label: "Insights" },
+  { href: "/networks", label: "Networks" },
 ];
 
 export default function Navbar() {

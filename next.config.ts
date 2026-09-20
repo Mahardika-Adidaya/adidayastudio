@@ -14,12 +14,33 @@ const nextConfig = {
     domains: ["oeijyuwngxmvlfffhixm.supabase.co"],
   },
 
-  // (Tambahan optional) menghindari warning experimental di Vercel
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+
   typescript: {
     ignoreBuildErrors: true,
+  },
+  async redirects() {
+    return [
+      {
+        source: "/insight",
+        destination: "/insights",
+        permanent: true,
+      },
+      {
+        source: "/insight/:path*",
+        destination: "/insights/:path*",
+        permanent: true,
+      },
+      {
+        source: "/network",
+        destination: "/networks",
+        permanent: true,
+      },
+      {
+        source: "/network/:path*",
+        destination: "/networks/:path*",
+        permanent: true,
+      },
+    ];
   },
 };
 
