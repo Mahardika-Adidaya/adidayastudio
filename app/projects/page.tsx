@@ -101,7 +101,14 @@ function ProjectsPage() {
       <FilterBar onFilterChange={setFilter} initialFilter={filter} />
 
       {filteredProjects.length === 0 ? (
-        <p className="text-center text-gray-500 mt-20">No projects found.</p>
+        <div className="flex flex-col items-center justify-center text-center py-24 px-4 max-w-lg mx-auto">
+          <h3 className="text-lg sm:text-xl font-medium text-white mb-2">
+            No projects in this category yet
+          </h3>
+          <p className="text-sm text-adidaya-text-muted leading-relaxed">
+            We hope to create and showcase projects in the category you are looking for soon. If you have a vision in mind, let&apos;s collaborate to make it a reality.
+          </p>
+        </div>
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 mt-12 space-y-8">
           {filteredProjects.map((p) => (

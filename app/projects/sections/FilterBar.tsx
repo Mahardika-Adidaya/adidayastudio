@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, Check, X } from "lucide-react";
+import { Search, SlidersHorizontal, Check, X } from "lucide-react";
 import {
   PROJECT_CATEGORIES,
   PROJECT_SUBCATEGORIES,
@@ -179,7 +179,7 @@ export default function FilterBar({ onFilterChange, initialFilter }: FilterBarPr
                 : "border border-white/20 bg-white/[0.04] hover:border-white/40 hover:bg-white/[0.08]"
             }`}
           >
-            <Menu
+            <SlidersHorizontal
               className={`w-5 h-5 transition-colors ${
                 isSubcategoryActive || isFilterOpen ? "text-adidaya-red" : "text-white/80"
               }`}
