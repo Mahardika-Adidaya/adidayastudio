@@ -32,6 +32,7 @@ export type Person = {
   personal_email?: string | null;
   phone?: string | null;
   slug?: string | null;
+  nip?: string | null;
   contact_visibility?: Record<string, { feed?: boolean; card?: boolean }> | null;
   is_published: boolean;
 

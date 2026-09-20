@@ -172,6 +172,7 @@ const handleSave = async (id: string) => {
       if (person.personal_email) payload.personal_email = person.personal_email;
       if (person.phone) payload.phone = person.phone;
       if (person.slug) payload.slug = person.slug;
+      if (person.nip) payload.nip = person.nip;
       if (person.contact_visibility) payload.contact_visibility = person.contact_visibility;
 
       let { data: inserted, error: insertError } = await supabase
@@ -184,6 +185,7 @@ const handleSave = async (id: string) => {
         delete payload.personal_email;
         delete payload.phone;
         delete payload.slug;
+        delete payload.nip;
         delete payload.contact_visibility;
         const retry = await supabase.from("profiles").insert(payload).select("id").single();
         inserted = retry.data;
@@ -276,6 +278,7 @@ const handleSave = async (id: string) => {
     if (person.personal_email !== undefined) updatePayload.personal_email = person.personal_email;
     if (person.phone !== undefined) updatePayload.phone = person.phone;
     if (person.slug !== undefined) updatePayload.slug = person.slug;
+    if (person.nip !== undefined) updatePayload.nip = person.nip;
     if (person.contact_visibility !== undefined) updatePayload.contact_visibility = person.contact_visibility;
 
     let { error: updateError } = await supabase
@@ -283,11 +286,12 @@ const handleSave = async (id: string) => {
       .update(updatePayload)
       .eq("id", person.id);
 
-    // If phone, slug, personal_email, or contact_visibility column doesn't exist in DB schema yet, retry without them
+    // If phone, slug, personal_email, nip, or contact_visibility column doesn't exist in DB schema yet, retry without them
     if (updateError && (updateError.message?.includes("column") || updateError.code === "PGRST204")) {
       delete updatePayload.personal_email;
       delete updatePayload.phone;
       delete updatePayload.slug;
+      delete updatePayload.nip;
       delete updatePayload.contact_visibility;
       const retry = await supabase.from("profiles").update(updatePayload).eq("id", person.id);
       updateError = retry.error;
@@ -302,9 +306,9 @@ const handleSave = async (id: string) => {
     });
 
     toast.success("Updated");
-  } catch (err) {
-    console.error("SAVE ERROR:", err);
-    toast.error("Save failed");
+  } catch (err: any) {
+    console.error("SAVE ERROR:", err?.message || err?.details || err);
+    toast.error(err?.message || "Save failed");
   } finally {
     setSavingId(null);
   }

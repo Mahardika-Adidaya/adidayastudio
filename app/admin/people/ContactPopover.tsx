@@ -52,6 +52,7 @@ export default function ContactPopover({
         | "personal_email"
         | "phone"
         | "slug"
+        | "nip"
     ) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       let val = e.target.value;
@@ -323,6 +324,33 @@ export default function ContactPopover({
                   placeholder="@username or profile link"
                   style={{ backgroundColor: "transparent", color: "#ffffff" }}
                   className="w-full px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-600 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* ID Number / NIP */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-neutral-300 font-medium block">
+                    ID Number / NIP
+                  </label>
+                  <span className="text-[10px] font-mono text-neutral-500">Official</span>
+                </div>
+              </div>
+              <div
+                style={{ backgroundColor: "#181818" }}
+                className="flex items-center rounded-xl border border-white/10 focus-within:border-adidaya-red focus-within:ring-1 focus-within:ring-adidaya-red transition-all overflow-hidden h-11"
+              >
+                <div className="h-full px-3.5 text-neutral-400 bg-white/5 border-r border-white/10 flex items-center justify-center font-mono text-xs font-semibold">
+                  #
+                </div>
+                <input
+                  value={person.nip || ""}
+                  onChange={handleField("nip")}
+                  placeholder="e.g. 71122003"
+                  style={{ backgroundColor: "transparent", color: "#ffffff" }}
+                  className="w-full px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-600 outline-none font-mono"
                 />
               </div>
             </div>
