@@ -2,8 +2,7 @@
 
 import useUserProfile from "@/hooks/useUserProfile";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { GripVertical, Plus } from "lucide-react";
+import { ArrowLeft, ExternalLink, GripVertical, Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabaseClient";
 import PeopleRow, { Person } from "./PeopleRow";
@@ -32,9 +31,7 @@ export default function AdminPeoplePage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select(
-          "id, name, position, role, order_index, email, linkedin, instagram, image_url, is_published"
-        )
+        .select("*")
         .order("order_index", { ascending: true });
 
       if (error) {
@@ -75,6 +72,8 @@ export default function AdminPeoplePage() {
       linkedin: null,
       instagram: null,
       email: null,
+      personal_email: null,
+      contact_visibility: null,
       is_published: false,
       image_file: null,
       preview_url: null,
@@ -158,7 +157,7 @@ const handleSave = async (id: string) => {
       }
 
       // 1) INSERT PROFILE (tanpa image dulu)
-      const payload = {
+      const payload: Record<string, any> = {
         name: person.name || "",
         position: person.position || "",
         role: person.role || "staff",
@@ -170,11 +169,26 @@ const handleSave = async (id: string) => {
         image_url: null,
       };
 
-      const { data: inserted, error: insertError } = await supabase
+      if (person.personal_email) payload.personal_email = person.personal_email;
+      if (person.phone) payload.phone = person.phone;
+      if (person.slug) payload.slug = person.slug;
+      if (person.contact_visibility) payload.contact_visibility = person.contact_visibility;
+
+      let { data: inserted, error: insertError } = await supabase
         .from("profiles")
         .insert(payload)
         .select("id")
         .single();
+
+      if (insertError && (insertError.message?.includes("column") || insertError.code === "PGRST204")) {
+        delete payload.personal_email;
+        delete payload.phone;
+        delete payload.slug;
+        delete payload.contact_visibility;
+        const retry = await supabase.from("profiles").insert(payload).select("id").single();
+        inserted = retry.data;
+        insertError = retry.error;
+      }
 
       if (insertError || !inserted) {
         console.error("INSERT ERROR:", insertError);
@@ -186,22 +200,24 @@ const handleSave = async (id: string) => {
       /* ============================================================
          CREATE AUTH USER (AUTO ACCOUNT CREATION)
       ============================================================ */
-      const createAuth = await fetch("/api/create-auth-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: person.email,
-          role: person.role,
-        }),
-      });
+      try {
+        const createAuth = await fetch("/api/create-auth-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: person.email,
+            role: person.role,
+          }),
+        });
 
-      const authResult = await createAuth.json();
-
-      if (authResult.error) {
-        console.error("AUTH CREATE ERROR:", authResult.error);
-        toast.error("Auth user creation failed");
-      } else {
-        toast.success("Auth user created");
+        if (createAuth.ok) {
+          const authResult = await createAuth.json().catch(() => ({}));
+          if (authResult?.error) {
+            console.warn("Auth create notice:", authResult.error);
+          }
+        }
+      } catch (authErr) {
+        console.warn("Auth create request error:", authErr);
       }
 
       /* ============================================================
@@ -246,19 +262,36 @@ const handleSave = async (id: string) => {
       if (newPhotoUrl) finalImageUrl = newPhotoUrl;
     }
 
-    const { error: updateError } = await supabase
+    const updatePayload: Record<string, any> = {
+      name: person.name,
+      position: person.position,
+      role: person.role,
+      email: person.email,
+      linkedin: person.linkedin,
+      instagram: person.instagram,
+      order_index: person.order_index,
+      image_url: finalImageUrl,
+    };
+
+    if (person.personal_email !== undefined) updatePayload.personal_email = person.personal_email;
+    if (person.phone !== undefined) updatePayload.phone = person.phone;
+    if (person.slug !== undefined) updatePayload.slug = person.slug;
+    if (person.contact_visibility !== undefined) updatePayload.contact_visibility = person.contact_visibility;
+
+    let { error: updateError } = await supabase
       .from("profiles")
-      .update({
-        name: person.name,
-        position: person.position,
-        role: person.role,
-        email: person.email,
-        linkedin: person.linkedin,
-        instagram: person.instagram,
-        order_index: person.order_index,
-        image_url: finalImageUrl,
-      })
+      .update(updatePayload)
       .eq("id", person.id);
+
+    // If phone, slug, personal_email, or contact_visibility column doesn't exist in DB schema yet, retry without them
+    if (updateError && (updateError.message?.includes("column") || updateError.code === "PGRST204")) {
+      delete updatePayload.personal_email;
+      delete updatePayload.phone;
+      delete updatePayload.slug;
+      delete updatePayload.contact_visibility;
+      const retry = await supabase.from("profiles").update(updatePayload).eq("id", person.id);
+      updateError = retry.error;
+    }
 
     if (updateError) throw updateError;
 
@@ -309,19 +342,19 @@ const handleSave = async (id: string) => {
   };
 
   /* ------------------------------------------------------
-     6. PUBLISH
+     6. PUBLISH / UNPUBLISH TOGGLE
   ------------------------------------------------------ */
-  const handlePublish = async (id: string) => {
+  const handleTogglePublish = async (id: string, newStatus: boolean) => {
     const person = people.find((p) => p.id === id);
     if (!person) return;
 
     if (id.startsWith("temp-")) {
-      toast.error("Save before publishing");
+      toast.error("Please save the person before setting feed visibility");
       return;
     }
 
-    if (!person.name.trim() || !person.position.trim()) {
-      toast.error("Name & Position required");
+    if (newStatus && (!person.name?.trim() || !person.position?.trim())) {
+      toast.error("Name & Position are required to show in feed");
       return;
     }
 
@@ -330,17 +363,16 @@ const handleSave = async (id: string) => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ is_published: true })
+        .update({ is_published: newStatus })
         .eq("id", id);
 
       if (error) throw error;
 
-      handleChange(id, { is_published: true });
-
-      toast.success("Published");
+      handleChange(id, { is_published: newStatus });
+      toast.success(newStatus ? "Shown in People feed" : "Hidden from People feed");
     } catch (err) {
-      console.log("PUBLISH ERROR:", err);
-      toast.error("Publish failed");
+      console.error("TOGGLE PUBLISH ERROR:", err);
+      toast.error("Failed to update visibility");
     } finally {
       setPublishingId(null);
     }
@@ -353,127 +385,145 @@ const handleSave = async (id: string) => {
     const person = people.find((p) => p.id === id);
     if (!person) return;
 
-    const confirmDelete = confirm(`Delete "${person.name}"?`);
+    const confirmDelete = confirm(`Delete "${person.name || "this member"}"?`);
     if (!confirmDelete) return;
 
     if (!id.startsWith("temp-")) {
       const { error } = await supabase.from("profiles").delete().eq("id", id);
       if (error) {
         console.log("DELETE ERROR:", error);
-        toast.error("Delete failed");
+        toast.error("Failed to delete member");
         return;
       }
     }
 
     setPeople((prev) => prev.filter((p) => p.id !== id));
-    toast.success("Deleted");
+    toast.success(`"${person.name || "Member"}" deleted successfully`);
   };
 
-if (!profileLoading && profile?.role === "staff") {
-  return (
-    <NoAccess message="Only admin and supervisor can access People section." />
-  );
-}
+  if (!profileLoading && profile?.role === "staff") {
+    return (
+      <NoAccess message="Only admin and supervisor can access People section." />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black pb-12 pt-6 text-gray-100">
-      <div className="mx-auto w-full max-w-6xl px-4">
-        {/* HEADER */}
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">
-            Admin • Projects
-          </p>
-
-          <div className="mt-2 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="mb-2 text-3xl font-semibold text-white">
-                <span className="mr-2 text-adidaya-red">*</span>
-                People
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Back to Dashboard */}
-              <button
-                onClick={() => router.push("/admin")}
-                className="rounded-full border border-gray-700 bg-black px-6 py-2.5 text-sm font-semibold text-gray-200 hover:text-adidaya-red hover:border-adidaya-red"
-              >
-                ← Back to Dashboard
-              </button>
-
-              {/* Add Person*/}
-              <button
-                onClick={() => {
-                  if (profile?.role !== "admin") return; // Hanya admin
-                  handleAddPerson();
-                }}
-                disabled={profile?.role !== "admin"}
-                className={`
-                  rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black 
-                  shadow-[0_0_30px_rgba(255,255,255,0.1)]
-                  ${profile?.role === "admin"
-                    ? "hover:bg-adidaya-red hover:text-white cursor-pointer"
-                    : "opacity-40 cursor-not-allowed"
-                  }
-                `}
-              >
-                + Add Person
-              </button>
-
-            </div>
-          </div>
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      {/* 1. HEADER */}
+      <header className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
+            Admin • Studio • People
+          </span>
         </div>
 
-        {/* TABLE */}
-        <motion.div
-          layout
-          className="rounded-3xl bg-[#050505] border border-gray-800/60 overflow-hidden"
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-white flex items-center gap-2 tracking-tight">
+            <span className="text-adidaya-red font-bold">*</span> People
+          </h1>
+          <p className="text-sm text-adidaya-text-muted">
+            Manage studio team members, organizational roles, contact credentials, virtual ID cards, and feed visibility.
+          </p>
+        </div>
+      </header>
+
+      {/* 2. SUBHEADER ACTION BAR (KIRI: Back to Dashboard, KANAN: Actions) */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-white/10">
+        {/* KIRI: Back to Dashboard */}
+        <button
+          onClick={() => router.push("/admin")}
+          className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 select-none group w-fit shadow-sm"
         >
-          {/* HEADER */}
-          <div className="grid grid-cols-[50px_96px_1.2fr_1fr_1fr_1fr_150px] gap-5 px-5 py-3 text-xs uppercase text-gray-500 border-b border-gray-800">
-            <div className="flex items-center gap-1">
-              <GripVertical className="h-3 w-3" />
-              No
+          <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
+          <span>Back to Dashboard</span>
+        </button>
+
+        {/* KANAN: Actions */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => window.open("/studio", "_blank")}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/30 hover:bg-white/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 select-none group shadow-sm"
+          >
+            <span>Live Preview</span>
+            <ExternalLink size={12} strokeWidth={1.5} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
+
+          <button
+            onClick={() => {
+              if (profile?.role !== "admin" && profile?.role !== "supervisor") return;
+              handleAddPerson();
+            }}
+            disabled={profile?.role !== "admin" && profile?.role !== "supervisor"}
+            className={`rounded-full px-5 py-2.5 text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all select-none ${
+              profile?.role === "admin" || profile?.role === "supervisor"
+                ? "bg-white text-black hover:bg-adidaya-red hover:text-white hover:shadow-[0_0_20px_rgba(229,57,53,0.4)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                : "opacity-40 cursor-not-allowed bg-white/20 text-white/40 border border-white/10"
+            }`}
+          >
+            <Plus size={14} strokeWidth={2} />
+            <span>Add Person</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. TABLE CONTAINER (CLEAN CARD STACK) */}
+      <div className="rounded-3xl bg-[#080808] p-2 sm:p-3 shadow-2xl">
+        <div className="overflow-x-auto">
+          <div className="min-w-[860px]">
+            {/* TABLE HEADER */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "44px 64px 1.2fr 1fr 105px 80px 45px 55px 80px",
+              }}
+              className="gap-3.5 px-5 py-3.5 text-[11px] uppercase tracking-wider font-mono text-neutral-400 bg-[#121212] rounded-2xl mb-2.5 items-center"
+            >
+              <div className="flex items-center gap-1">
+                <GripVertical className="h-3 w-3" />
+                <span>No</span>
+              </div>
+              <div>Photo</div>
+              <div>Name</div>
+              <div>Position</div>
+              <div>Role</div>
+              <div className="text-center">Contact</div>
+              <div className="text-center">ID</div>
+              <div className="text-center">Feed</div>
+              <div className="text-right">Actions</div>
             </div>
-            <div>Photo</div>
-            <div>Name</div>
-            <div>Position</div>
-            <div>Role</div>
-            <div>Contact</div>
-            <div className="text-right">Actions</div>
+
+            {/* TABLE BODY */}
+            {loading ? (
+              <div className="p-12 text-center text-xs font-mono text-neutral-500">Loading team members...</div>
+            ) : people.length === 0 ? (
+              <div className="p-12 text-center text-xs font-mono text-neutral-500">No members found. Click &quot;+ Add Person&quot; to create one.</div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {people.map((person, index) => (
+                  <PeopleRow
+                    key={person.id}
+                    person={person}
+                    index={index}
+                    allPeople={people}
+                    onChange={handleChange}
+                    onMoveUp={() => moveRow(index, "up")}
+                    onMoveDown={() => moveRow(index, "down")}
+                    onSave={handleSave}
+                    onTogglePublish={handleTogglePublish}
+                    onDelete={handleDelete}
+                    onDeletePhoto={handleDeletePhoto}
+                    saving={savingId === person.id}
+                    publishing={publishingId === person.id}
+                    activePopoverId={activePopoverId}
+                    openPopover={() => openPopover(person.id)}
+                    closePopover={closePopover}
+                    canEdit={profile?.role === "admin" || profile?.role === "supervisor"}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* BODY */}
-          {loading ? (
-            <div className="p-10 text-center text-gray-500">Loading...</div>
-          ) : people.length === 0 ? (
-            <div className="p-10 text-center text-gray-500">No members yet</div>
-          ) : (
-            <div className="divide-y divide-gray-900/80">
-              {people.map((person, index) => (
-                <PeopleRow
-                  key={person.id}
-                  person={person}
-                  index={index}
-                  onChange={handleChange}
-                  onMoveUp={() => moveRow(index, "up")}
-                  onMoveDown={() => moveRow(index, "down")}
-                  onSave={handleSave}
-                  onPublish={handlePublish}
-                  onDelete={handleDelete}
-                  onDeletePhoto={handleDeletePhoto}
-                  saving={savingId === person.id}
-                  publishing={publishingId === person.id}
-                  activePopoverId={activePopoverId}
-                  openPopover={() => openPopover(person.id)}
-                  closePopover={closePopover}
-                  canEdit={profile?.role === "admin"}
-                />
-
-              ))}
-            </div>
-          )}
-        </motion.div>
+        </div>
       </div>
 
       <div id="people-popover-root"></div>
