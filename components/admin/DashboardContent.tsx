@@ -4,46 +4,29 @@ import HomeHeroCard from "./HomeHeroCard";
 import PeopleCard from "./PeopleCard";
 import StatsProjects from "./StatsProjects";
 import StatsInsights from "./StatsInsights";
+import ContactCard from "./ContactCard";
 import StatsCareers from "./StatsCareers";
 
 export default function DashboardContent({ role }: { role: string }) {
   return (
-    <div className="space-y-10">
+    <div className="flex flex-col gap-5">
+      {/* HOME HERO (admin & supervisor only) */}
+      {(role === "admin" || role === "supervisor") && <HomeHeroCard />}
 
-      {/* ============================== */}
-      {/* ROW 1 — 2 columns */}
-      {/* ============================== */}
-      {(role === "admin" || role === "supervisor") && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <HomeHeroCard />
-          <PeopleCard />
-        </div>
-      )}
+      {/* STUDIO TEAM & PEOPLE (admin & supervisor only) */}
+      {(role === "admin" || role === "supervisor") && <PeopleCard />}
 
-      {/* ============================== */}
-      {/* ROW 2 — 3 columns */}
-      {/* ============================== */}
-      <div
-        className={`
-          grid gap-6
-          ${role === "admin" || role === "supervisor"
-            ? "grid-cols-1 md:grid-cols-3"
-            : role === "staff"
-            ? "grid-cols-1 md:grid-cols-2"
-            : ""
-          }
-        `}
-      >
-        {/* PROJECT (semua role) */}
-        <StatsProjects />
+      {/* PROJECTS (semua role) */}
+      <StatsProjects />
 
-        {/* INSIGHT (semua role) */}
-        <StatsInsights />
+      {/* INSIGHTS (semua role) */}
+      <StatsInsights />
 
-        {/* CAREER (admin & supervisor only) */}
-        {(role === "admin" || role === "supervisor") && <StatsCareers />}
-      </div>
+      {/* CONTACTS (admin & supervisor only) */}
+      {(role === "admin" || role === "supervisor") && <ContactCard />}
 
+      {/* CAREERS (admin & supervisor only) */}
+      {(role === "admin" || role === "supervisor") && <StatsCareers />}
     </div>
   );
 }

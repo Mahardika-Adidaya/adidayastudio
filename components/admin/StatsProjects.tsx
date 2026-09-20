@@ -42,63 +42,63 @@ export default function StatsProjects() {
   return (
     <motion.div
       layout
-      whileHover={{ y: -3 }}
+      whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
-      className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 sm:p-7 flex flex-col justify-between shadow-[0_0_50px_rgba(0,0,0,0.5)] hover:border-white/20 transition-all group relative overflow-hidden"
+      className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] hover:border-white/20 transition-all group relative overflow-hidden"
     >
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-white group-hover:border-adidaya-red/40 group-hover:text-adidaya-red transition-colors">
-            <FolderKanban size={18} strokeWidth={1.5} />
-          </div>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
-            Projects
-          </span>
+      {/* ===== KOLOM KIRI: ICON, JUDUL, SUBTITLE, STATS ===== */}
+      <div className="flex items-start gap-4 sm:gap-5 flex-1 min-w-0">
+        <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-white group-hover:border-adidaya-red/40 group-hover:text-adidaya-red transition-colors shrink-0">
+          <FolderKanban size={20} strokeWidth={1.5} />
         </div>
 
-        <h2 className="text-lg font-semibold text-white tracking-tight">
-          Projects Overview
-        </h2>
+        <div className="flex flex-col min-w-0">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono mb-1">
+            Projects
+          </span>
+          <h2 className="text-lg font-semibold text-white tracking-tight">
+            Projects Overview
+          </h2>
+          <p className="mt-1 text-xs sm:text-sm text-adidaya-text-muted leading-relaxed">
+            Manage portfolio items, case studies, and architecture works.
+          </p>
 
-        {stats.loading ? (
-          <div className="mt-4 flex items-center gap-2 text-xs text-adidaya-text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-            <span>Loading metrics...</span>
+          {/* KETERANGAN STATS DI BAWAHNYA */}
+          <div className="mt-4">
+            {stats.loading ? (
+              <div className="flex items-center gap-2 text-xs text-adidaya-text-muted">
+                <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                <span className="font-mono text-[11px] tracking-wider uppercase">Loading metrics...</span>
+              </div>
+            ) : (
+              <div className="inline-flex flex-wrap items-center rounded-full bg-white/[0.03] border border-white/10 p-1 divide-x divide-white/10 shadow-sm">
+                <div className="flex items-center gap-2 px-3.5 py-1">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-adidaya-text-muted">Total</span>
+                  <span className="font-semibold text-white font-mono text-xs">{stats.total}</span>
+                </div>
+
+                <div className="flex items-center gap-2 px-3.5 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-adidaya-text-muted">Published</span>
+                  <span className="font-semibold text-emerald-400 font-mono text-xs">{stats.published}</span>
+                </div>
+
+                <div className="flex items-center gap-2 px-3.5 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 shadow-[0_0_6px_rgba(251,191,36,0.4)]" />
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-adidaya-text-muted">Draft</span>
+                  <span className="font-semibold text-zinc-300 font-mono text-xs">{stats.draft}</span>
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between py-1.5 px-3 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="text-xs text-adidaya-text-muted">Total Projects</span>
-              <span className="text-sm font-semibold text-white font-mono">{stats.total}</span>
-            </div>
-
-            <div className="flex items-center justify-between py-1.5 px-3 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="text-xs text-adidaya-text-muted flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>Published</span>
-              </span>
-              <span className="text-sm font-semibold text-emerald-400 font-mono">
-                {stats.published}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between py-1.5 px-3 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="text-xs text-adidaya-text-muted flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
-                <span>Draft</span>
-              </span>
-              <span className="text-sm font-semibold text-gray-400 font-mono">
-                {stats.draft}
-              </span>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
-      <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 relative z-10">
+      {/* ===== KOLOM KANAN: TOMBOL MANAGE & PREVIEW ===== */}
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={() => router.push("/admin/projects")}
-          className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-black hover:bg-adidaya-red hover:text-white transition-all duration-200 flex items-center gap-1.5 shadow-md group/btn"
+          className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-black hover:bg-adidaya-red hover:text-white transition-all duration-200 flex items-center gap-1.5 shadow-md group/btn"
         >
           <span>Manage Projects</span>
           <ArrowRight size={13} strokeWidth={2} className="transition-transform group-hover/btn:translate-x-0.5" />
@@ -106,7 +106,7 @@ export default function StatsProjects() {
 
         <button
           onClick={() => window.open("/projects", "_blank")}
-          className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
+          className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
         >
           <span>Preview</span>
           <ExternalLink size={12} strokeWidth={1.5} />

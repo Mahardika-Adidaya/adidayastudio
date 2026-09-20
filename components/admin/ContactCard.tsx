@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Users, ExternalLink, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MessageSquareShare, ExternalLink, ArrowRight } from "lucide-react";
 
-export default function PeopleCard() {
+export default function ContactCard() {
   const router = useRouter();
 
   return (
@@ -17,18 +17,18 @@ export default function PeopleCard() {
       {/* ===== KOLOM KIRI: ICON, JUDUL, SUBTITLE ===== */}
       <div className="flex items-start gap-4 sm:gap-5 flex-1 min-w-0">
         <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-white group-hover:border-adidaya-red/40 group-hover:text-adidaya-red transition-colors shrink-0">
-          <Users size={20} strokeWidth={1.5} />
+          <MessageSquareShare size={20} strokeWidth={1.5} />
         </div>
 
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono mb-1">
-            Studio • People
+            Network • Contact
           </span>
           <h2 className="text-lg font-semibold text-white tracking-tight">
-            Studio Team & People
+            Contact & Socials
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-adidaya-text-muted leading-relaxed">
-            Update the architects, designers, and team members shown in the Studio section.
+            Configure studio WhatsApp number, consultation text, email, and Instagram links.
           </p>
         </div>
       </div>
@@ -36,15 +36,15 @@ export default function PeopleCard() {
       {/* ===== KOLOM KANAN: TOMBOL EDIT & PREVIEW ===== */}
       <div className="flex items-center gap-3 shrink-0">
         <button
-          onClick={() => router.push("/admin/people")}
+          onClick={() => router.push("/admin/contact")}
           className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-black hover:bg-adidaya-red hover:text-white transition-all duration-200 flex items-center gap-1.5 shadow-md group/btn"
         >
-          <span>Edit People</span>
+          <span>Manage Contacts</span>
           <ArrowRight size={13} strokeWidth={2} className="transition-transform group-hover/btn:translate-x-0.5" />
         </button>
 
         <button
-          onClick={() => window.open("/studio", "_blank")}
+          onClick={() => window.open("/networks", "_blank")}
           className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
         >
           <span>Preview</span>
@@ -54,4 +54,3 @@ export default function PeopleCard() {
     </motion.div>
   );
 }
-
