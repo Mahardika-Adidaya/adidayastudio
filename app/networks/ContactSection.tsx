@@ -31,26 +31,25 @@ export default function ContactSection() {
       highlight: "WhatsApp",
       icon: <MessageCircle className="w-7 h-7 opacity-80" />,
       href:
-        "https://wa.me/6281234567890?text=" +
+        "https://wa.me/6281295845860?text=" +
         encodeURIComponent("Hi Adidaya Studio, I would like to ..."),
       variant: "light",
     },
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-5 md:gap-6 md:grid-cols-3 max-w-[340px] sm:max-w-md md:max-w-5xl mx-auto w-full">
       {cards.map((card) => (
         <a
           key={card.id}
           href={card.href}
           target="_blank"
           className={`
-            relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between h-64 
+            relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between h-56 sm:h-64 
             transition transform
-            ${
-              card.variant === "red"
-                ? "bg-[#e34234] text-white hover:-translate-y-1 hover:shadow-xl"
-                : "bg-[#f6f6f6] text-black hover:-translate-y-1 hover:shadow-xl"
+            ${card.variant === "red"
+              ? "bg-[#e34234] text-white hover:-translate-y-1 hover:shadow-xl"
+              : "bg-[#f6f6f6] text-black hover:-translate-y-1 hover:shadow-xl"
             }
           `}
         >

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 
@@ -16,21 +17,54 @@ interface PublicTabsProps {
 }
 
 export function PublicTabs({ tabs, active, onChange }: PublicTabsProps) {
+  const dockRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCenter = (element: HTMLElement | null) => {
+    if (!element || !dockRef.current) return;
+    const container = dockRef.current;
+    const elementLeft = element.offsetLeft;
+    const elementWidth = element.offsetWidth;
+    const containerWidth = container.offsetWidth;
+
+    const targetScrollLeft = elementLeft - containerWidth / 2 + elementWidth / 2;
+
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    if (dockRef.current) {
+      const activeButton = dockRef.current.querySelector('[data-active="true"]') as HTMLElement | null;
+      if (activeButton) {
+        scrollToCenter(activeButton);
+      }
+    }
+  }, [active]);
+
   return (
-    <div className="flex justify-center mb-16">
-      <div className="flex gap-2 rounded-full px-2 py-2 border border-adidaya-red bg-black/40 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full relative">
+    <div className="flex justify-center mb-16 px-4 max-w-full">
+      <div
+        ref={dockRef}
+        className="border border-adidaya-red rounded-full p-2 flex gap-2 overflow-x-auto no-scrollbar max-w-full relative"
+      >
         {tabs.map((t) => {
           const isActive = active === t.value;
 
           return (
             <button
               key={t.value}
-              onClick={() => onChange?.(t.value)}
+              data-active={isActive}
+              onClick={(e) => {
+                onChange?.(t.value);
+                scrollToCenter(e.currentTarget);
+              }}
               className={cn(
-                "relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 whitespace-nowrap z-10 select-none",
+                "relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 whitespace-nowrap z-10 select-none shrink-0",
                 isActive
-                  ? "text-white font-extrabold"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-black"
+                  ? "text-white font-bold"
+                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
               )}
             >
               {isActive && (
@@ -48,3 +82,4 @@ export function PublicTabs({ tabs, active, onChange }: PublicTabsProps) {
     </div>
   );
 }
+
