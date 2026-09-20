@@ -3,21 +3,19 @@
 import useUserProfile from "@/hooks/useUserProfile";
 import HeaderAdmin from "@/components/admin/HeaderAdmin";
 import DashboardContent from "@/components/admin/DashboardContent";
+import { Loader2 } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { profile, loading } = useUserProfile();
-
-  // Logging
-  console.log("PROFILE:", profile);
-  console.log("LOADING:", loading);
 
   /* ============================
      1. LOADING STATE
      ============================ */
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-        Loading session...
+      <div className="w-full min-h-[60vh] flex flex-col items-center justify-center gap-3 text-adidaya-text-muted">
+        <Loader2 size={24} className="animate-spin text-adidaya-red" />
+        <span className="text-xs uppercase tracking-widest font-mono">Loading dashboard...</span>
       </div>
     );
   }
@@ -27,23 +25,21 @@ export default function AdminDashboardPage() {
      ============================ */
   if (!profile) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-red-400">
-        No access.
+      <div className="w-full min-h-[60vh] flex flex-col items-center justify-center gap-2 text-red-400">
+        <p className="text-base font-semibold">Access Restricted</p>
+        <p className="text-xs text-adidaya-text-muted">Please sign in with authorized credentials to view this page.</p>
       </div>
     );
   }
 
   /* ============================
      3. VALID SESSION (admin, supervisor, staff)
-     Semua diperbolehkan masuk dashboard.
-     Detail role-based dikontrol oleh DashboardContent.
      ============================ */
   return (
-    <div className="min-h-screen bg-black text-white pb-12 pt-6">
-      <div className="max-w-5xl mx-auto px-4">
-        <HeaderAdmin profile={profile} />
-        <DashboardContent role={profile.role ?? "staff"} />
-      </div>
+    <div className="w-full max-w-5xl mx-auto px-6 py-8">
+      <HeaderAdmin profile={profile} />
+      <DashboardContent role={profile.role ?? "staff"} />
     </div>
   );
 }
+

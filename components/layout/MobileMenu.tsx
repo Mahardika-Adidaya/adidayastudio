@@ -2,16 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Instagram, Mail, User } from "lucide-react";
+import { X, Instagram, Mail, User, LayoutDashboard, LogOut } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/cn";
+import { ProfileType } from "@/hooks/useUserProfile";
 
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
   navItems: { label: string; href: string }[];
+  profile?: ProfileType | null;
+  onSignOut?: () => void;
 }
 
-export default function MobileMenu({ open, onClose, navItems }: MobileMenuProps) {
+export default function MobileMenu({
+  open,
+  onClose,
+  navItems,
+  profile,
+  onSignOut,
+}: MobileMenuProps) {
   const pathname = usePathname();
 
   const isItemActive = (href: string) => {
@@ -82,21 +92,101 @@ export default function MobileMenu({ open, onClose, navItems }: MobileMenuProps)
               );
             })}
 
-            {/* LOGIN BUTTON FOR MOBILE */}
-            <div className="pt-2 mt-2 border-t border-white/10">
-              <Link
-                href="/login"
-                onClick={onClose}
-                className={cn(
-                  "text-sm py-3 px-5 rounded-full flex items-center gap-3 transition-all duration-200 select-none",
-                  pathname === "/login"
-                    ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
-                    : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
-                )}
-              >
-                <User size={16} strokeWidth={1.5} />
-                <span>Login Account</span>
-              </Link>
+            {/* AUTH SECTION FOR MOBILE */}
+            <div className="pt-6 mt-6 border-t border-white/10 flex flex-col gap-2.5">
+              {profile ? (
+                <>
+                  <div className="px-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-3 mb-1">
+                    <div
+                      className="w-10 h-10 rounded-full overflow-hidden shrink-0 flex items-center justify-center border border-white/20 shadow-md"
+                      style={!profile.image_url ? { backgroundColor: "#e53935" } : undefined}
+                    >
+                      {profile.image_url ? (
+                        <Image
+                          src={profile.image_url}
+                          alt={profile.name || "Avatar"}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <span className="text-white font-semibold text-xs tracking-wider select-none">
+                          {profile.name
+                            ? profile.name
+                                .split(" ")
+                                .filter(Boolean)
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join("")
+                                .toUpperCase()
+                            : <User size={16} strokeWidth={1.5} className="text-white" />}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {profile.name || "Administrator"}
+                      </p>
+                      <p className="text-[10px] text-adidaya-text-muted uppercase tracking-wider font-mono">
+                        {profile.role || "staff"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/admin"
+                    onClick={onClose}
+                    className={cn(
+                      "text-sm py-2.5 px-4 rounded-full flex items-center gap-3 transition-all select-none",
+                      pathname === "/admin"
+                        ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                        : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                    )}
+                  >
+                    <LayoutDashboard size={16} strokeWidth={1.5} />
+                    <span>Dashboard</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/profile"
+                    onClick={onClose}
+                    className={cn(
+                      "text-sm py-2.5 px-4 rounded-full flex items-center gap-3 transition-all select-none",
+                      pathname === "/admin/profile"
+                        ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                        : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                    )}
+                  >
+                    <User size={16} strokeWidth={1.5} />
+                    <span>Edit Profile</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onSignOut?.();
+                    }}
+                    className="text-sm py-2.5 px-4 rounded-full flex items-center gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all font-medium text-left border border-transparent select-none mt-1"
+                  >
+                    <LogOut size={16} strokeWidth={1.5} />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className={cn(
+                    "text-sm py-3 px-5 rounded-full flex items-center gap-3 transition-all duration-200 select-none",
+                    pathname === "/login"
+                      ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                      : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                  )}
+                >
+                  <User size={16} strokeWidth={1.5} />
+                  <span>Login Account</span>
+                </Link>
+              )}
             </div>
           </nav>
         </div>

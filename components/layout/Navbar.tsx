@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, User } from "lucide-react";
-import { motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, User, LayoutDashboard, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import MobileMenu from "./MobileMenu";
 import { cn } from "@/lib/cn";
+import useUserProfile from "@/hooks/useUserProfile";
+import { supabase } from "@/lib/supabaseClient";
 
 const navItems = [
   { href: "/", label: "Intro" },
@@ -19,7 +21,12 @@ const navItems = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { profile, loading } = useUserProfile();
 
   const isItemActive = (href: string) => {
     if (href === "/") {
@@ -27,6 +34,30 @@ export default function Navbar() {
     }
     return pathname === href || pathname?.startsWith(href + "/");
   };
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle Logout
+  async function handleSignOut() {
+    setUserDropdownOpen(false);
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <>
@@ -51,7 +82,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Right Section: Desktop Nav + Login Button (Mepet Kanan) */}
+          {/* Right Section: Desktop Nav + Login/Avatar Button (Mepet Kanan) */}
           <div className="hidden md:flex items-center gap-2.5">
             {/* Desktop Nav with Sliding Glass Pill (100% ORIGINAL) */}
             <nav className="flex items-center gap-1 p-1 rounded-full bg-white/[0.05] border border-white/10 backdrop-blur-md relative shadow-lg shadow-black/20">
@@ -83,24 +114,137 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Desktop Login Button (Bulat Sempurna / Circle) */}
-            <Link
-              href="/login"
-              aria-label="Login / Account"
-              title="Login Account"
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center border shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-200 group select-none shrink-0",
-                pathname === "/login"
-                  ? "bg-white/15 border-white/25 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                  : "bg-white/[0.05] border-white/10 text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08]"
-              )}
-            >
-              <User
-                size={16}
-                strokeWidth={1.5}
-                className="transition-transform duration-200 group-hover:scale-110 text-adidaya-text-muted group-hover:text-white"
-              />
-            </Link>
+            {/* Desktop Auth Button (Avatar jika Logged In, Login jika Logged Out) */}
+            {!loading && profile ? (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  aria-label="User Account Menu"
+                  style={!profile.image_url ? { backgroundColor: "#e53935" } : undefined}
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center border shadow-lg shadow-black/20 transition-all duration-200 group select-none shrink-0 relative overflow-hidden",
+                    userDropdownOpen || pathname?.startsWith("/admin")
+                      ? "border-white/40 shadow-[0_0_15px_rgba(229,57,53,0.35)]"
+                      : "border-white/15 hover:border-white/30"
+                  )}
+                >
+                  {profile.image_url ? (
+                    <Image
+                      src={profile.image_url}
+                      alt={profile.name || "User Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-semibold text-xs tracking-wider select-none">
+                      {profile.name
+                        ? profile.name
+                            .split(" ")
+                            .filter(Boolean)
+                            .map((n) => n[0])
+                            .slice(0, 2)
+                            .join("")
+                            .toUpperCase()
+                        : <User size={16} strokeWidth={1.5} className="text-white" />}
+                    </span>
+                  )}
+                </button>
+
+                {/* DROPDOWN MENU (TRANSLUCENT FROSTED GLASS) */}
+                <AnimatePresence>
+                  {userDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      style={{
+                        top: "calc(100% + 18px)",
+                        backgroundColor: "rgba(10, 10, 10, 0.45)",
+                        backdropFilter: "blur(24px)",
+                        WebkitBackdropFilter: "blur(24px)",
+                      }}
+                      className="absolute right-0 w-64 border border-white/10 rounded-3xl p-3 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col gap-1.5 z-50"
+                    >
+                      {/* USER INFO HEADER */}
+                      <div className="px-3 py-2.5 border-b border-white/10 mb-1 flex flex-col items-start">
+                        <p className="text-sm font-semibold text-white truncate max-w-full">
+                          {profile.name || "Administrator"}
+                        </p>
+                        <p className="text-xs text-adidaya-text-muted truncate max-w-full mt-0.5">
+                          {profile.email}
+                        </p>
+                        <div className="mt-2">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/10 text-[10px] text-gray-300 font-medium tracking-wider uppercase font-mono">
+                            {profile.role || "staff"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* LINKS (FULL PILL SHAPE) */}
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-full text-xs transition-all select-none",
+                          pathname === "/admin"
+                            ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                            : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                        )}
+                      >
+                        <LayoutDashboard size={15} strokeWidth={1.5} />
+                        <span>Dashboard</span>
+                      </Link>
+
+                      <Link
+                        href="/admin/profile"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 rounded-full text-xs transition-all select-none",
+                          pathname === "/admin/profile"
+                            ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                            : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                        )}
+                      >
+                        <User size={15} strokeWidth={1.5} />
+                        <span>Profile</span>
+                      </Link>
+
+                      {/* SIGN OUT (FULL PILL SHAPE) */}
+                      <div className="border-t border-white/10 mt-1 pt-1.5">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all font-medium text-left border border-transparent select-none"
+                        >
+                          <LogOut size={15} strokeWidth={1.5} />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              /* Desktop Login Button */
+              <Link
+                href="/login"
+                aria-label="Login / Account"
+                title="Login Account"
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center border shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-200 group select-none shrink-0",
+                  pathname === "/login"
+                    ? "bg-white/15 border-white/25 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                    : "bg-white/[0.05] border-white/10 text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08]"
+                )}
+              >
+                <User
+                  size={16}
+                  strokeWidth={1.5}
+                  className="transition-transform duration-200 group-hover:scale-110 text-adidaya-text-muted group-hover:text-white"
+                />
+              </Link>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -119,7 +263,10 @@ export default function Navbar() {
         open={open}
         onClose={() => setOpen(false)}
         navItems={navItems}
+        profile={profile}
+        onSignOut={handleSignOut}
       />
     </>
   );
 }
+
