@@ -1,7 +1,7 @@
-// components/network/NetworkPage.tsx
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import ContactSection from "./ContactSection";
 import CareerSection from "./CareerSection";
 
@@ -16,31 +16,45 @@ export default function NetworkPage() {
       </h1>
 
       {/* Tabs */}
-      <div className="border border-adidaya-red rounded-full p-2 flex gap-3 mb-16 overflow-x-auto no-scrollbar max-w-full">
+      <div className="border border-adidaya-red rounded-full p-2 flex gap-3 mb-16 overflow-x-auto no-scrollbar max-w-full relative">
         <button
           onClick={() => setActiveTab("contact")}
-          className={`px-6 py-2 rounded-full text-sm font-regular transition-all duration-200
+          className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 z-10 select-none
             ${
               activeTab === "contact"
-                ? "bg-adidaya-red text-white font-extrabold"
-                : "bg-gray-200 text-gray-700 hover:bg-adidaya-red hover:text-black"
+                ? "text-white font-extrabold"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }
           `}
         >
-          Contact
+          {activeTab === "contact" && (
+            <motion.div
+              layoutId="network-tab-active"
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
+              className="absolute inset-0 bg-adidaya-red rounded-full -z-10 shadow-md shadow-red-900/40"
+            />
+          )}
+          <span>Contact</span>
         </button>
 
         <button
           onClick={() => setActiveTab("career")}
-          className={`px-6 py-2 rounded-full text-sm font-regular transition-all duration-200
+          className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 z-10 select-none
             ${
               activeTab === "career"
-                ? "bg-adidaya-red text-white font-extrabold"
-                : "bg-gray-200 text-gray-700 hover:bg-adidaya-red hover:text-black"
+                ? "text-white font-extrabold"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }
           `}
         >
-          Career
+          {activeTab === "career" && (
+            <motion.div
+              layoutId="network-tab-active"
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
+              className="absolute inset-0 bg-adidaya-red rounded-full -z-10 shadow-md shadow-red-900/40"
+            />
+          )}
+          <span>Career</span>
         </button>
       </div>
 

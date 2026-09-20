@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const INSIGHT_CATEGORIES = [
   "Studio Stories",
@@ -34,7 +35,7 @@ export default function FilterBarInsight({
     <div className="flex flex-col items-center gap-6 w-full mt-10">
 
       {/* CATEGORY TABS */}
-      <div className="border border-adidaya-red rounded-full p-2 flex gap-3 overflow-x-auto no-scrollbar max-w-full">
+      <div className="border border-adidaya-red rounded-full p-2 flex gap-3 overflow-x-auto no-scrollbar max-w-full relative">
         {categoriesWithAll.map((cat) => {
           const isActive = category === cat;
 
@@ -42,15 +43,22 @@ export default function FilterBarInsight({
             <button
               key={cat}
               onClick={() => onCategoryChange(cat)}
-              className={`px-6 py-2 rounded-full text-sm transition-all whitespace-nowrap
+              className={`relative px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-200 whitespace-nowrap z-10 select-none
                 ${
                   isActive
-                    ? "bg-adidaya-red text-white font-semibold"
-                    : "bg-gray-200 text-gray-800 hover:bg-adidaya-red hover:text-white"
+                    ? "text-white"
+                    : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                 }
               `}
             >
-              {cat}
+              {isActive && (
+                <motion.div
+                  layoutId="insight-category-active"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  className="absolute inset-0 bg-adidaya-red rounded-full -z-10 shadow-md shadow-red-900/40"
+                />
+              )}
+              <span>{cat}</span>
             </button>
           );
         })}

@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Instagram, Mail } from "lucide-react";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="w-full border-t border-adidaya-border py-10 px-6">
       <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
@@ -43,7 +45,7 @@ export default function Footer() {
           </Link>
 
           <Link
-            href="mailto:hello@adidayastudio.com"
+            href="mailto:adidayastudio@gmail.com"
             className="text-adidaya-text-muted hover:text-adidaya-red transition-colors"
           >
             <Mail size={20} />
@@ -54,7 +56,7 @@ export default function Footer() {
            DESKTOP RIGHT (unchanged)
         ========================================================= */}
         <div className="hidden md:block text-right text-body-sm text-adidaya-text-muted leading-tight">
-          <p>© 2025 PT Mahardika Adidaya</p>
+          <p>© {currentYear} PT Mahardika Adidaya</p>
           <span className="text-xs">All rights reserved</span>
         </div>
 
@@ -86,7 +88,7 @@ export default function Footer() {
           <div className="h-2" />
 
           {/* Copyright */}
-          <p className="text-body-sm opacity-80">© 2025 PT Mahardika Adidaya</p>
+          <p className="text-body-sm opacity-80">© {currentYear} PT Mahardika Adidaya</p>
           <p className="text-xs opacity-70">All rights reserved</p>
         </div>
 

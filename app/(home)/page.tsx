@@ -16,7 +16,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="relative w-full min-h-screen text-white -mt-20">
+    <div className="relative w-full min-h-screen text-white">
       {/* BACKGROUND FULL PAGE */}
       <div className="absolute inset-0 -z-10">
         <img
@@ -39,26 +39,31 @@ export default async function HomePage() {
           Framing the Flow to Feel
         </h1>
 
-        <p className="max-w-xl text-gray-200 text-md md:text-md leading-relaxed mb-10">
-          We craft spaces that follow the quiet flow of life—framed with intention
-          and shaped to evoke feeling.
-          <br />
-          To us, architecture is a journey: of light
-          in motion, of human presence, and of spaces that breathe with time.
-          <br />
-          <br />
-          Step inside and discover how each project grows from context, intuition,
-          and sensitivity.
-        </p>
+        {/* INVERTED TRIANGLE HERO DESCRIPTION */}
+        <div className="flex flex-col items-center gap-3.5 max-w-2xl text-gray-200 text-sm md:text-base leading-relaxed mb-10">
+          <p className="max-w-2xl">
+            We craft spaces that follow the quiet flow of life—framed with intention and shaped to evoke feeling.
+          </p>
+          <p className="max-w-xl">
+            To us, architecture is a journey: of light in motion, of human presence, and of spaces that breathe with time.
+          </p>
+          <p className="max-w-md text-gray-300">
+            Step inside and discover how each project grows from context, intuition, and sensitivity.
+          </p>
+        </div>
 
         {/* DISCOVER BUTTON */}
         <a
           href="/projects"
           className="
-            px-8 py-3 rounded-full border border-white/30 
-            bg-white/10 backdrop-blur-md
-            transition-all font-medium tracking-wide
-            hover:bg-adidaya-red hover:border-adidaya-red hover:text-white
+            inline-block
+            px-8 py-3 rounded-full border border-white/20
+            bg-white/10 backdrop-blur-md text-white
+            font-medium tracking-wide
+            transform transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+            hover:bg-adidaya-red hover:border-adidaya-red hover:scale-105
+            active:scale-95
+            cursor-pointer select-none
           "
         >
           Discover More →
