@@ -4,9 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { motion } from "framer-motion";
 import MobileMenu from "./MobileMenu";
+import { cn } from "@/lib/cn";
 
 const navItems = [
   { href: "/", label: "Intro" },
@@ -50,35 +51,57 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav with Sliding Glass Pill */}
-          <nav className="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/[0.05] border border-white/10 backdrop-blur-md relative shadow-lg shadow-black/20">
-            {navItems.map((item) => {
-              const active = isItemActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`
-                    relative px-4 py-1.5 rounded-full text-body-sm transition-colors duration-200 z-10 select-none
-                    ${
-                      active
-                        ? "text-white font-medium"
-                        : "text-adidaya-text-muted hover:text-white"
-                    }
-                  `}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="active-nav-pill"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      className="absolute inset-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-full -z-10"
-                    />
-                  )}
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Right Section: Desktop Nav + Login Button (Mepet Kanan) */}
+          <div className="hidden md:flex items-center gap-2.5">
+            {/* Desktop Nav with Sliding Glass Pill (100% ORIGINAL) */}
+            <nav className="flex items-center gap-1 p-1 rounded-full bg-white/[0.05] border border-white/10 backdrop-blur-md relative shadow-lg shadow-black/20">
+              {navItems.map((item) => {
+                const active = isItemActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`
+                      relative px-4 py-1.5 rounded-full text-body-sm transition-colors duration-200 z-10 select-none
+                      ${
+                        active
+                          ? "text-white font-medium"
+                          : "text-adidaya-text-muted hover:text-white"
+                      }
+                    `}
+                  >
+                    {active && (
+                      <motion.div
+                        layoutId="active-nav-pill"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-full -z-10"
+                      />
+                    )}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Desktop Login Button (Bulat Sempurna / Circle) */}
+            <Link
+              href="/login"
+              aria-label="Login / Account"
+              title="Login Account"
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center border shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-200 group select-none shrink-0",
+                pathname === "/login"
+                  ? "bg-white/15 border-white/25 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                  : "bg-white/[0.05] border-white/10 text-adidaya-text-muted hover:text-white hover:border-white/20 hover:bg-white/[0.08]"
+              )}
+            >
+              <User
+                size={16}
+                strokeWidth={1.5}
+                className="transition-transform duration-200 group-hover:scale-110 text-adidaya-text-muted group-hover:text-white"
+              />
+            </Link>
+          </div>
 
           {/* Mobile Hamburger */}
           <button

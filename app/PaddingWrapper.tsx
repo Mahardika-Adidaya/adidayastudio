@@ -25,10 +25,10 @@ export default function PaddingWrapper({ children }: { children: ReactNode }) {
     <main
       className={
         isHome
-          ? "-mt-20 p-0 h-screen"
+          ? "-mt-20 p-0 h-screen flex-1"
           : isFullBleed
-          ? "-mt-20 p-0"
-          : "pt-10"
+          ? "-mt-20 p-0 flex-1"
+          : "pt-10 flex-1 flex flex-col"
       }
     >
       {children}

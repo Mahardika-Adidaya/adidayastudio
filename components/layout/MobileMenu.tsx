@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Instagram, Mail } from "lucide-react";
+import { X, Instagram, Mail, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 interface MobileMenuProps {
@@ -81,6 +81,23 @@ export default function MobileMenu({ open, onClose, navItems }: MobileMenuProps)
                 </Link>
               );
             })}
+
+            {/* LOGIN BUTTON FOR MOBILE */}
+            <div className="pt-2 mt-2 border-t border-white/10">
+              <Link
+                href="/login"
+                onClick={onClose}
+                className={cn(
+                  "text-sm py-3 px-5 rounded-full flex items-center gap-3 transition-all duration-200 select-none",
+                  pathname === "/login"
+                    ? "text-white bg-white/15 border border-white/15 font-semibold backdrop-blur-md shadow-sm"
+                    : "text-adidaya-text-muted hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent font-medium"
+                )}
+              >
+                <User size={16} strokeWidth={1.5} />
+                <span>Login Account</span>
+              </Link>
+            </div>
           </nav>
         </div>
 

@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="icon" href="/favicon-192.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="bg-adidaya-bg text-adidaya-text font-sans">
+      <body className="bg-adidaya-bg text-adidaya-text font-sans min-h-screen flex flex-col justify-between">
         <Navbar />
         
        {/* WRAPPER to decide padding */}
