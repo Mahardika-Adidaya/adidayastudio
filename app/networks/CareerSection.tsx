@@ -2,7 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
+import { Mail } from "lucide-react";
 
 interface Job {
   id: number;
@@ -24,25 +26,32 @@ export const dynamic = "force-dynamic";
 export default function CareerSection() {
   const [openId, setOpenId] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // FETCH FUNCTION (dipisahkan biar bisa refetch)
   async function loadCareers() {
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("published", true)
-      .order("created_at", { ascending: false })
-      .throwOnError();
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setJobs(
-        data.map((job: any) => ({
-          ...job,
-          description: Array.isArray(job.description)
-            ? job.description
-            : [],
-        }))
-      );
+      if (!error && data) {
+        setJobs(
+          data.map((job: any) => ({
+            ...job,
+            description: Array.isArray(job.description)
+              ? job.description
+              : [],
+          }))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -181,11 +190,33 @@ export default function CareerSection() {
         );
       })}
 
-      {/* Jika tidak ada job */}
-      {jobs.length === 0 && (
-        <p className="py-10 text-center text-gray-500 text-sm">
-          No open positions at the moment.
-        </p>
+      {/* Loading State */}
+      {loading && (
+        <div className="py-16 text-center text-sm text-neutral-500">
+          Loading career opportunities...
+        </div>
+      )}
+
+      {/* Jika tidak ada job (Empty State bergaya No Projects) */}
+      {!loading && jobs.length === 0 && (
+        <div className="flex flex-col items-center justify-center text-center pt-8 pb-12 px-4 max-w-xl mx-auto">
+          <h3 className="text-lg sm:text-xl font-medium text-white mb-2">
+            No open positions at the moment
+          </h3>
+          <p className="text-sm text-adidaya-text-muted leading-relaxed mb-6 max-w-lg [text-wrap:balance]">
+            We are not actively hiring right now, but we are always excited to connect with passionate talent. Feel free to send your CV and portfolio to stay in&nbsp;touch.
+          </p>
+          <motion.a
+            href="mailto:adidayastudio@gmail.com?subject=Career%20Application%20-%20Adidaya%20Studio"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:bg-adidaya-red hover:text-white transition-colors duration-200 shadow-lg select-none cursor-pointer"
+          >
+            <Mail className="w-4 h-4" strokeWidth={1.75} />
+            <span>Send Email</span>
+          </motion.a>
+        </div>
       )}
     </div>
   );
