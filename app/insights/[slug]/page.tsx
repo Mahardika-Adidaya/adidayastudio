@@ -108,17 +108,28 @@ export default function InsightDetail() {
         style={{ width: `${progress * 100}%` }}
       />
 
-      {/* HERO */}
+      {/* HERO (FULL BLEED TO TOP) */}
       <section className="relative w-full">
-        <div className="relative h-[420px] sm:h-[480px] lg:h-[520px] overflow-hidden">
-          <img
-            src={insight.hero_image_url || ""}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative min-h-[540px] sm:min-h-[620px] lg:min-h-[700px] h-[65vh] sm:h-[72vh] lg:h-[78vh] w-full overflow-hidden flex flex-col justify-end">
+          {insight.hero_image_url ? (
+            <img
+              src={insight.hero_image_url}
+              alt={insight.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full bg-neutral-900 flex items-center justify-center text-gray-500">
+              No cover image
+            </div>
+          )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/20" />
+          {/* TOP VIGNETTE FOR NAVBAR VISIBILITY */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/25 to-transparent pointer-events-none" />
 
-          <div className="absolute inset-x-0 bottom-0 pb-12">
+          {/* BOTTOM GRADIENT FOR TEXT READABILITY & SEAMLESS BLEND */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
+
+          <div className="relative z-10 w-full pt-28 pb-12 sm:pb-14">
             <div className="max-w-4xl mx-auto px-6">
               
               {/* CATEGORY (CLICKABLE) */}

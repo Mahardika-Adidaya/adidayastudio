@@ -44,22 +44,26 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       href={`/projects/${project.slug}`}
       className="block break-inside-avoid"
     >
-      <div className="overflow-hidden rounded-[32px] bg-neutral-900 border border-neutral-800">
+      <div className="group bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-neutral-600 transition duration-300">
+        
+        {/* IMAGE (LANDSCAPE 16:10 RATIO WITH HOVER ZOOM) */}
+        <div className="aspect-[16/10] w-full overflow-hidden bg-neutral-950 relative">
+          {hero ? (
+            <img
+              src={hero}
+              alt={title}
+              className="h-full w-full object-cover group-hover:scale-105 transition duration-500 ease-out"
+            />
+          ) : (
+            <div className="w-full h-full bg-neutral-800" />
+          )}
+        </div>
 
-        {/* IMAGE */}
-        {hero ? (
-          <img
-            src={hero}
-            alt={title}
-            className="w-full h-auto object-cover rounded-[32px]"
-          />
-        ) : (
-          <div className="h-60 bg-neutral-800 rounded-[32px]" />
-        )}
-
-        {/* TEXT */}
-        <div className="px-4 py-6">
-          <h3 className="text-lg font-semibold mb-1">{title}</h3>
+        {/* TEXT (ORIGINAL CAPTION PRESERVED) */}
+        <div className="px-5 py-5 text-left">
+          <h3 className="text-lg font-semibold leading-snug mb-1 group-hover:text-adidaya-red transition-colors line-clamp-1">
+            {title}
+          </h3>
 
           <p className="text-gray-400 text-sm">
             {cat}
@@ -67,9 +71,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </p>
 
           {location && (
-            <p className="text-gray-400 text-sm">{location}</p>
+            <p className="text-gray-400 text-sm mt-0.5">{location}</p>
           )}
         </div>
+
       </div>
     </Link>
   );
