@@ -65,6 +65,37 @@ function stripHtml(html?: string | null): string {
     .trim();
 }
 
+function formatSkills(skills?: string | null): string {
+  if (!skills) return "-";
+  let s = skills.trim();
+  if (s.startsWith("[") && s.endsWith("]")) {
+    try {
+      const arr = JSON.parse(s);
+      if (Array.isArray(arr)) {
+        return arr.filter(Boolean).join(", ");
+      }
+    } catch {
+      return s.replace(/[\[\]"']/g, "").replace(/,\s*/g, ", ").trim();
+    }
+  }
+  return s;
+}
+
+function normalizeDescriptionList(desc?: any): string[] {
+  if (!desc) return [];
+  if (Array.isArray(desc)) return desc.map((d) => String(d).trim()).filter(Boolean);
+  if (typeof desc === "string") {
+    if (desc.trim().startsWith("[") && desc.trim().endsWith("]")) {
+      try {
+        const arr = JSON.parse(desc);
+        if (Array.isArray(arr)) return arr.map((d) => String(d).trim()).filter(Boolean);
+      } catch {}
+    }
+    return desc.split("\n").map((line) => line.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 function AdidayaLogoIcon({
   className = "w-4 h-4",
   style,
@@ -243,6 +274,9 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     }
   }
 
+  // Normalized descriptions for career
+  const careerDescriptions = normalizeDescriptionList(data.descriptionList);
+
   // Copy Link action
   const handleCopyLink = () => {
     if (typeof navigator !== "undefined") {
@@ -409,23 +443,24 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           {/* STORY LIVE PREVIEW CARD (9:16 PORTRAIT) */}
           {data.type === "career" ? (
             /* DEDICATED CAREER PREVIEW CARD (ALL FIELDS) */
-            <div className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0 p-3.5 bg-gradient-to-b from-[#18181c] via-[#0e0e11] to-[#09090b]">
-              {/* TOP BRAND BAR */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10">
-                  <AdidayaLogoIcon className="w-3 h-3 shrink-0" />
-                  <span className="text-[8px] uppercase tracking-[0.16em] text-white font-bold">
-                    ADIDAYA STUDIO
+            <div
+              className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0 p-3.5 pt-8"
+              style={{
+                background:
+                  "radial-gradient(circle at 85% 15%, rgba(229, 57, 53, 0.22) 0%, rgba(229, 57, 53, 0.04) 40%, transparent 65%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
+              }}
+            >
+              {/* TOP: WE'RE HIRING & TITLE */}
+              <div className="space-y-1.5">
+                {/* We're hiring badge (left aligned, no caps lock) */}
+                <div className="flex items-center">
+                  <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[7.5px] font-bold text-white shadow-md shadow-red-900/30">
+                    We're hiring
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[7px] font-bold text-white uppercase tracking-wider shadow-md shadow-red-900/40">
-                  WE'RE HIRING
-                </span>
-              </div>
 
-              {/* POSITION TITLE */}
-              <div className="my-1">
-                <div className="flex items-start gap-1">
+                {/* POSITION TITLE */}
+                <div className="flex items-start gap-1 pt-0.5">
                   <span className="text-adidaya-red font-bold text-sm leading-tight">*</span>
                   <h3 className="text-sm sm:text-[15px] font-extrabold text-white leading-tight tracking-tight">
                     {data.title}
@@ -433,83 +468,81 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 </div>
               </div>
 
-              {/* 2-COLUMN KEY SPECS GRID */}
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.03] border border-white/10 text-[7.5px]">
+              {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-[7.5px]">
                 <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">TYPE</span>
-                  <span className="font-semibold text-neutral-200 truncate block">{data.jobType || "Full time"}</span>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">TYPE</span>
+                  <span className="font-semibold text-neutral-100 block truncate">{data.jobType || "Full time"}</span>
                 </div>
                 <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DIVISION</span>
-                  <span className="font-semibold text-neutral-200 truncate block">{data.division || "Architecture and Design"}</span>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DEADLINE</span>
+                  <span className="font-semibold text-adidaya-red block truncate">{data.deadline || "Open"}</span>
                 </div>
                 <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">EDUCATION</span>
-                  <span className="font-semibold text-neutral-200 truncate block">{data.education || "S-1 — Architecture"}</span>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EDUCATION</span>
+                  <span className="font-semibold text-neutral-100 block truncate">{data.education || "S-1 — Architecture"}</span>
                 </div>
                 <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DEADLINE</span>
-                  <span className="font-semibold text-adidaya-red truncate block">{data.deadline || "Open"}</span>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EXPERIENCE</span>
+                  <span className="font-semibold text-neutral-100 block truncate">{data.experience || "0–1 year"}</span>
                 </div>
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">EXPERIENCE</span>
-                  <span className="font-semibold text-neutral-200 truncate block">{data.experience || "0–1 year"}</span>
-                </div>
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">SKILL</span>
-                  <span className="font-semibold text-neutral-200 truncate block">{data.skills || "Archicad, AutoCAD"}</span>
+                <div className="col-span-2 pt-0.5">
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">SKILL</span>
+                  <span className="font-semibold text-neutral-100 block leading-tight">
+                    {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
+                  </span>
                 </div>
               </div>
 
-              {/* DESCRIPTION BULLETS */}
-              {data.descriptionList && data.descriptionList.length > 0 && (
-                <div className="space-y-0.5">
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DESCRIPTION</span>
+              {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS) */}
+              {careerDescriptions.length > 0 && (
+                <div className="space-y-0.5 my-0.5">
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DESCRIPTION</span>
                   <ul className="space-y-0.5 text-[7px] text-neutral-300 leading-tight">
-                    {data.descriptionList.slice(0, 3).map((item, i) => (
+                    {careerDescriptions.map((item, i) => (
                       <li key={i} className="flex items-start gap-1">
-                        <span className="text-adidaya-red font-bold leading-none">•</span>
-                        <span className="line-clamp-1">{item}</span>
+                        <span className="text-adidaya-red font-bold leading-none shrink-0">•</span>
+                        <span>{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* APPLICATION SUBMISSION NOTE */}
-              <div className="p-1.5 rounded-lg bg-white/[0.02] border border-white/5 text-[6.5px] text-neutral-400 space-y-0.5">
-                <div className="truncate">
-                  <span className="text-neutral-500 font-medium">Send CV & portfolio to:</span>{" "}
-                  <span className="text-white font-semibold">{data.email || "adidayastudio@gmail.com"}</span>
+              {/* BOTTOM SECTION: Send CV (Left) + QR Code (Right) -> Bottom Logo */}
+              <div className="space-y-1.5 pt-0.5">
+                {/* Row: Left (Submission Info), Right (QR Code) */}
+                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/10">
+                  <div className="flex-1 min-w-0 text-[6.5px] text-neutral-300 space-y-0.5 text-left">
+                    <p className="truncate">
+                      <span className="text-neutral-400 font-normal">Send CV & portfolio to:</span>{" "}
+                      <strong className="text-white font-semibold">{data.email || "adidayastudio@gmail.com"}</strong>
+                    </p>
+                    <p className="truncate">
+                      <span className="text-neutral-400 font-normal">Subject:</span>{" "}
+                      <strong className="text-neutral-200 font-semibold">{data.subject || "AD_YourName"}</strong>
+                    </p>
+                    <p className="truncate">
+                      <span className="text-neutral-400 font-normal">File:</span>{" "}
+                      <strong className="text-neutral-200 font-semibold">{data.fileNote || "PDF, max. 5 MB"}</strong>
+                    </p>
+                  </div>
+                  {qrSvg && (
+                    <div
+                      className="w-10 h-10 rounded-lg bg-white p-0.5 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+                      dangerouslySetInnerHTML={{ __html: qrSvg }}
+                    />
+                  )}
                 </div>
-                <div className="flex justify-between text-[6px] text-neutral-400">
-                  <span>Subject: <strong className="text-neutral-200">{data.subject || "AD_YourName"}</strong></span>
-                  <span>File: <strong className="text-neutral-200">{data.fileNote || "PDF, max. 5 MB"}</strong></span>
-                </div>
-              </div>
 
-              {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
-              <div className="flex items-end justify-between gap-1.5 pt-0.5">
-                <div className="flex flex-col items-start gap-1 min-w-0">
-                  <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md">
-                    <span className="text-[7.5px] sm:text-[8px] font-medium text-neutral-300 whitespace-nowrap">
-                      Read more on <span className="font-semibold text-white">adidayastudio.id</span>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 pl-0.5 text-neutral-400 opacity-80">
-                    <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
-                    <span className="text-[7px] uppercase tracking-[0.2em] font-medium text-neutral-300">
-                      <span className="font-bold text-white">adidaya</span>{" "}
-                      <span className="font-light text-neutral-400">studio</span>
-                    </span>
-                  </div>
+                {/* Bottom: Real Adidaya Logo & Wordmark */}
+                <div className="flex items-center justify-center gap-1 text-neutral-400 opacity-80 pt-0.5">
+                  <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
+                  <span className="text-[7.5px] uppercase tracking-[0.2em] font-medium text-neutral-300">
+                    <span className="font-bold text-white">adidaya</span>{" "}
+                    <span className="font-light text-neutral-400">studio</span>
+                  </span>
                 </div>
-                {qrSvg && (
-                  <div
-                    className="w-9 h-9 rounded-lg bg-white p-0.5 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-                    dangerouslySetInnerHTML={{ __html: qrSvg }}
-                  />
-                )}
               </div>
             </div>
           ) : (
@@ -691,72 +724,43 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               height: 1920,
               backgroundColor: "#09090b",
               color: "#ffffff",
-              padding: "85px 75px 75px 75px",
+              padding: "240px 75px 65px 75px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               boxSizing: "border-box",
-              backgroundImage: "linear-gradient(to bottom, #16161a 0%, #0d0d10 50%, #09090b 100%)",
+              backgroundImage:
+                "radial-gradient(circle at 85% 15%, rgba(229, 57, 53, 0.25) 0%, rgba(229, 57, 53, 0.05) 42%, transparent 68%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
             }}
           >
-            {/* TOP BRAND BAR */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+            {/* TOP: WE'RE HIRING & TITLE */}
+            <div>
+              {/* We're hiring badge (left aligned, no caps lock, ~250px from top) */}
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  backgroundColor: "rgba(255, 255, 255, 0.06)",
-                  padding: "12px 28px",
-                  borderRadius: 9999,
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                }}
-              >
-                <AdidayaLogoIcon style={{ width: 24, height: 24, display: "block" }} />
-                <span
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 700,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: "#FFFFFF",
-                  }}
-                >
-                  ADIDAYA STUDIO
-                </span>
-              </div>
-
-              <div
-                style={{
+                  display: "inline-flex",
+                  alignSelf: "flex-start",
                   backgroundColor: "#E53935",
                   color: "#FFFFFF",
-                  padding: "12px 30px",
+                  padding: "10px 24px",
                   borderRadius: 9999,
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: 700,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  boxShadow: "0 6px 20px rgba(229, 57, 53, 0.4)",
+                  letterSpacing: "0.02em",
+                  boxShadow: "0 6px 20px rgba(229, 57, 53, 0.35)",
+                  marginBottom: 16,
                 }}
               >
-                WE'RE HIRING
+                We're hiring
               </div>
-            </div>
 
-            {/* POSITION TITLE */}
-            <div style={{ margin: "16px 0 20px 0" }}>
+              {/* POSITION TITLE */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <span style={{ color: "#E53935", fontSize: 64, fontWeight: 800, lineHeight: 1 }}>*</span>
+                <span style={{ color: "#E53935", fontSize: 56, fontWeight: 800, lineHeight: 1 }}>*</span>
                 <h1
                   style={{
-                    fontSize: 56,
+                    fontSize: 54,
                     fontWeight: 800,
                     lineHeight: 1.15,
                     letterSpacing: "-0.02em",
@@ -769,51 +773,49 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               </div>
             </div>
 
-            {/* 2-COLUMN KEY SPECS GRID */}
+            {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: "28px 40px",
+                gap: "24px 36px",
                 backgroundColor: "rgba(255, 255, 255, 0.04)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
                 borderRadius: 24,
-                padding: "36px 40px",
+                padding: "32px 36px",
               }}
             >
               <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>TYPE</span>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>TYPE</span>
                 <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.jobType || "Full time"}</span>
               </div>
               <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>DIVISION</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.division || "Architecture and Design"}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
                 <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
               </div>
               <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
               </div>
               <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.skills || "Archicad, AutoCAD, SketchUp"}</span>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
+              </div>
+              <div style={{ gridColumn: "span 2", paddingTop: 4 }}>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
+                <span style={{ fontSize: 23, fontWeight: 700, color: "#F4F4F5", lineHeight: 1.4 }}>
+                  {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
+                </span>
               </div>
             </div>
 
-            {/* DESCRIPTION BULLETS */}
-            {data.descriptionList && data.descriptionList.length > 0 && (
+            {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS) */}
+            {careerDescriptions.length > 0 && (
               <div style={{ margin: "16px 0" }}>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 12 }}>DESCRIPTION</span>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 12 }}>DESCRIPTION</span>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {data.descriptionList.slice(0, 5).map((item, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 20, color: "#D4D4D8", lineHeight: 1.4 }}>
+                  {careerDescriptions.map((item, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 19, color: "#D4D4D8", lineHeight: 1.45 }}>
                       <span style={{ color: "#E53935", fontWeight: 700 }}>•</span>
                       <span>{item}</span>
                     </div>
@@ -822,82 +824,66 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               </div>
             )}
 
-            {/* APPLICATION NOTE */}
-            <div
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: 20,
-                padding: "24px 32px",
-                fontSize: 18,
-                color: "#A1A1AA",
-                lineHeight: 1.6,
-              }}
-            >
-              <div style={{ marginBottom: 6 }}>
-                Please send your CV and portfolio to:{" "}
-                <strong style={{ color: "#FFFFFF", fontWeight: 700 }}>{data.email || "adidayastudio@gmail.com"}</strong>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, color: "#71717A" }}>
-                <span>Subject: <strong style={{ color: "#D4D4D8" }}>{data.subject || "AD_YourName"}</strong></span>
-                <span>File: <strong style={{ color: "#D4D4D8" }}>{data.fileNote || "PDF, max. 5 MB"}</strong></span>
-              </div>
-            </div>
+            {/* BOTTOM SECTION: Left (Submission info), Right (QR Code) -> Bottom (Logo) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 10 }}>
+              {/* Row: Left (Submission Info), Right (QR Code) */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 30,
+                  backgroundColor: "rgba(255, 255, 255, 0.04)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  borderRadius: 22,
+                  padding: "26px 32px",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0, fontSize: 19, color: "#D4D4D8", lineHeight: 1.6, textAlign: "left" }}>
+                  <div style={{ marginBottom: 4 }}>
+                    <span style={{ color: "#A1A1AA" }}>Send CV & portfolio to: </span>
+                    <strong style={{ color: "#FFFFFF", fontWeight: 700 }}>{data.email || "adidayastudio@gmail.com"}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#A1A1AA" }}>Subject: </span>
+                    <strong style={{ color: "#E4E4E7", fontWeight: 600 }}>{data.subject || "AD_YourName"}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#A1A1AA" }}>File: </span>
+                    <strong style={{ color: "#E4E4E7", fontWeight: 600 }}>{data.fileNote || "PDF, max. 5 MB"}</strong>
+                  </div>
+                </div>
 
-            {/* BOTTOM PILL & QR */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "space-between",
-                gap: 30,
-                paddingTop: 10,
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 16 }}>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.08)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    borderRadius: 9999,
-                    padding: "12px 26px",
-                  }}
-                >
-                  <span style={{ fontSize: 22, fontWeight: 500, color: "#D4D4D8" }}>
-                    Read more on <strong style={{ color: "#FFFFFF" }}>adidayastudio.id</strong>
-                  </span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 4, opacity: 0.85 }}>
-                  <AdidayaLogoIcon style={{ width: 18, height: 18, display: "block" }} />
-                  <span style={{ fontSize: 13, letterSpacing: "0.22em", textTransform: "uppercase", color: "#A1A1AA" }}>
-                    <strong style={{ color: "#FFFFFF" }}>adidaya</strong> studio
-                  </span>
-                </div>
+                {qrSvg && (
+                  <div
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      padding: 8,
+                      borderRadius: 16,
+                      border: "2px solid rgba(255, 255, 255, 0.4)",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.45)",
+                      width: 110,
+                      height: 110,
+                      boxSizing: "border-box",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
+                    }}
+                  />
+                )}
               </div>
 
-              {qrSvg && (
-                <div
-                  style={{
-                    backgroundColor: "#FFFFFF",
-                    padding: 10,
-                    borderRadius: 18,
-                    border: "2px solid rgba(255, 255, 255, 0.4)",
-                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
-                    width: 120,
-                    height: 120,
-                    boxSizing: "border-box",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
-                  }}
-                />
-              )}
+              {/* Bottom: Real Adidaya Logo & Wordmark */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, opacity: 0.85 }}>
+                <AdidayaLogoIcon style={{ width: 22, height: 22, display: "block" }} />
+                <span style={{ fontSize: 16, letterSpacing: "0.22em", textTransform: "uppercase", color: "#A1A1AA" }}>
+                  <strong style={{ color: "#FFFFFF" }}>adidaya</strong> studio
+                </span>
+              </div>
             </div>
           </div>
         ) : (
