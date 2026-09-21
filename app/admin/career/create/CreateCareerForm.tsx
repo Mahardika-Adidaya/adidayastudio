@@ -87,7 +87,7 @@ export default function CreateCareerForm() {
   const skillDropdownRef = useRef<HTMLDivElement>(null);
 
   const [deadline, setDeadline] = useState("");
-  const [email] = useState("career@adidayastudio.id");
+  const [email] = useState("adidayastudio@gmail.com");
   const [subject, setSubject] = useState("");
 
   const [descriptionInput, setDescriptionInput] = useState("");

@@ -965,17 +965,23 @@ export default function AdminCareerList() {
             type: "career",
             title: shareJob.title,
             category: shareJob.division || "Career",
-            meta: [
-              shareJob.type,
-              shareJob.division,
-              shareJob.education,
-              shareJob.experience?.split("\n")[0] || "",
-              shareJob.deadline ? `Deadline: ${shareJob.deadline}` : "",
-            ].filter(Boolean),
-            excerpt:
-              Array.isArray(shareJob.description)
-                ? shareJob.description.join(". ")
-                : String(shareJob.description || ""),
+            jobType: shareJob.type,
+            division: shareJob.division,
+            education: shareJob.education,
+            experience: shareJob.experience,
+            skills: shareJob.skills,
+            deadline: shareJob.deadline,
+            descriptionList: Array.isArray(shareJob.description)
+              ? shareJob.description
+              : typeof shareJob.description === "string"
+              ? [shareJob.description]
+              : [],
+            email:
+              shareJob.email && !shareJob.email.includes("career@adidayastudio.id")
+                ? shareJob.email
+                : "adidayastudio@gmail.com",
+            subject: shareJob.subject || "AD_YourName",
+            fileNote: shareJob.fileNote || "PDF, max. 5 MB",
             url: typeof window !== "undefined" ? `${window.location.origin}/networks#career` : undefined,
           }}
         />

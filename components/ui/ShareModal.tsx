@@ -31,6 +31,18 @@ export interface ShareItemData {
   location?: string | null;
   year?: string | null;
   status?: string | null;
+
+  // Career specific structured fields:
+  jobType?: string | null;
+  division?: string | null;
+  education?: string | null;
+  experience?: string | null;
+  skills?: string | null;
+  deadline?: string | null;
+  descriptionList?: string[] | null;
+  email?: string | null;
+  subject?: string | null;
+  fileNote?: string | null;
 }
 
 interface ShareModalProps {
@@ -394,106 +406,214 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
         {/* MODAL BODY */}
         <div className="p-5 flex flex-col items-center justify-center overflow-y-auto no-scrollbar">
-          {/* STORY LIVE PREVIEW CARD (9:16 PORTRAIT WITH FULL TOP BLEED HERO) */}
-          <div className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0">
-            {/* HERO IMAGE FULL TOP BLEED BACKGROUND */}
-            <div className="absolute inset-x-0 top-0 h-[64%] overflow-hidden">
-              {activeImage ? (
-                <>
-                  <img
-                    src={activeImage}
-                    alt={data.title}
-                    className="w-full h-full object-cover object-center"
-                  />
-                  {/* Top subtle vignette */}
-                  <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent" />
-                  {/* Bottom fade - subtle so it doesn't cover the building */}
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#09090b] via-[#09090b]/60 to-transparent" />
-                </>
-              ) : (
-                <div className="w-full h-full bg-gradient-to-b from-neutral-800 to-[#09090b] flex flex-col items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-adidaya-red mb-1">
-                    <Sparkles size={16} />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">
+          {/* STORY LIVE PREVIEW CARD (9:16 PORTRAIT) */}
+          {data.type === "career" ? (
+            /* DEDICATED CAREER PREVIEW CARD (ALL FIELDS) */
+            <div className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0 p-3.5 bg-gradient-to-b from-[#18181c] via-[#0e0e11] to-[#09090b]">
+              {/* TOP BRAND BAR */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10">
+                  <AdidayaLogoIcon className="w-3 h-3 shrink-0" />
+                  <span className="text-[8px] uppercase tracking-[0.16em] text-white font-bold">
                     ADIDAYA STUDIO
                   </span>
                 </div>
-              )}
-            </div>
+                <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[7px] font-bold text-white uppercase tracking-wider shadow-md shadow-red-900/40">
+                  WE'RE HIRING
+                </span>
+              </div>
 
-            {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
-            <div className="relative z-10 px-4 mt-auto mb-2 space-y-1.5">
-              {/* TITLE & SUBTITLE */}
-              <div>
-                <h3 className="text-base sm:text-[17px] font-bold text-white leading-tight tracking-tight line-clamp-2 drop-shadow-md">
-                  {data.title}
-                </h3>
-                {data.subtitle && (
-                  <p className="text-[10px] sm:text-[10.5px] font-medium text-neutral-300 leading-snug line-clamp-1 mt-0.5">
-                    {data.subtitle}
-                  </p>
+              {/* POSITION TITLE */}
+              <div className="my-1">
+                <div className="flex items-start gap-1">
+                  <span className="text-adidaya-red font-bold text-sm leading-tight">*</span>
+                  <h3 className="text-sm sm:text-[15px] font-extrabold text-white leading-tight tracking-tight">
+                    {data.title}
+                  </h3>
+                </div>
+              </div>
+
+              {/* 2-COLUMN KEY SPECS GRID */}
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.03] border border-white/10 text-[7.5px]">
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">TYPE</span>
+                  <span className="font-semibold text-neutral-200 truncate block">{data.jobType || "Full time"}</span>
+                </div>
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DIVISION</span>
+                  <span className="font-semibold text-neutral-200 truncate block">{data.division || "Architecture and Design"}</span>
+                </div>
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">EDUCATION</span>
+                  <span className="font-semibold text-neutral-200 truncate block">{data.education || "S-1 — Architecture"}</span>
+                </div>
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DEADLINE</span>
+                  <span className="font-semibold text-adidaya-red truncate block">{data.deadline || "Open"}</span>
+                </div>
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">EXPERIENCE</span>
+                  <span className="font-semibold text-neutral-200 truncate block">{data.experience || "0–1 year"}</span>
+                </div>
+                <div>
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">SKILL</span>
+                  <span className="font-semibold text-neutral-200 truncate block">{data.skills || "Archicad, AutoCAD"}</span>
+                </div>
+              </div>
+
+              {/* DESCRIPTION BULLETS */}
+              {data.descriptionList && data.descriptionList.length > 0 && (
+                <div className="space-y-0.5">
+                  <span className="text-[6px] uppercase tracking-wider text-neutral-500 font-bold block">DESCRIPTION</span>
+                  <ul className="space-y-0.5 text-[7px] text-neutral-300 leading-tight">
+                    {data.descriptionList.slice(0, 3).map((item, i) => (
+                      <li key={i} className="flex items-start gap-1">
+                        <span className="text-adidaya-red font-bold leading-none">•</span>
+                        <span className="line-clamp-1">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* APPLICATION SUBMISSION NOTE */}
+              <div className="p-1.5 rounded-lg bg-white/[0.02] border border-white/5 text-[6.5px] text-neutral-400 space-y-0.5">
+                <div className="truncate">
+                  <span className="text-neutral-500 font-medium">Send CV & portfolio to:</span>{" "}
+                  <span className="text-white font-semibold">{data.email || "adidayastudio@gmail.com"}</span>
+                </div>
+                <div className="flex justify-between text-[6px] text-neutral-400">
+                  <span>Subject: <strong className="text-neutral-200">{data.subject || "AD_YourName"}</strong></span>
+                  <span>File: <strong className="text-neutral-200">{data.fileNote || "PDF, max. 5 MB"}</strong></span>
+                </div>
+              </div>
+
+              {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
+              <div className="flex items-end justify-between gap-1.5 pt-0.5">
+                <div className="flex flex-col items-start gap-1 min-w-0">
+                  <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md">
+                    <span className="text-[7.5px] sm:text-[8px] font-medium text-neutral-300 whitespace-nowrap">
+                      Read more on <span className="font-semibold text-white">adidayastudio.id</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-0.5 text-neutral-400 opacity-80">
+                    <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
+                    <span className="text-[7px] uppercase tracking-[0.2em] font-medium text-neutral-300">
+                      <span className="font-bold text-white">adidaya</span>{" "}
+                      <span className="font-light text-neutral-400">studio</span>
+                    </span>
+                  </div>
+                </div>
+                {qrSvg && (
+                  <div
+                    className="w-9 h-9 rounded-lg bg-white p-0.5 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            /* PROJECT & INSIGHT PREVIEW CARD */
+            <div className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0">
+              {/* HERO IMAGE FULL TOP BLEED BACKGROUND */}
+              <div className="absolute inset-x-0 top-0 h-[64%] overflow-hidden">
+                {activeImage ? (
+                  <>
+                    <img
+                      src={activeImage}
+                      alt={data.title}
+                      className="w-full h-full object-cover object-center"
+                    />
+                    {/* Top subtle vignette */}
+                    <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent" />
+                    {/* Bottom fade - subtle so it doesn't cover the building */}
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#09090b] via-[#09090b]/60 to-transparent" />
+                  </>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-b from-neutral-800 to-[#09090b] flex flex-col items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-adidaya-red mb-1">
+                      <Sparkles size={16} />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">
+                      ADIDAYA STUDIO
+                    </span>
+                  </div>
                 )}
               </div>
 
-              {/* META CHIPS */}
-              {metaChips.length > 0 && (
-                <div className="flex flex-wrap gap-1 text-[8px] text-neutral-300">
-                  {metaChips.map((chip, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-neutral-200 font-medium"
-                    >
-                      {chip}
+              {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
+              <div className="relative z-10 px-4 mt-auto mb-2 space-y-1.5">
+                {/* TITLE & SUBTITLE */}
+                <div>
+                  <h3 className="text-base sm:text-[17px] font-bold text-white leading-tight tracking-tight line-clamp-2 drop-shadow-md">
+                    {data.title}
+                  </h3>
+                  {data.subtitle && (
+                    <p className="text-[10px] sm:text-[10.5px] font-medium text-neutral-300 leading-snug line-clamp-1 mt-0.5">
+                      {data.subtitle}
+                    </p>
+                  )}
+                </div>
+
+                {/* META CHIPS */}
+                {metaChips.length > 0 && (
+                  <div className="flex flex-wrap gap-1 text-[8px] text-neutral-300">
+                    {metaChips.map((chip, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-neutral-200 font-medium"
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* SPILL TEASER WITH BLUR FADE OVERLAY */}
+                <div className="relative overflow-hidden max-h-[76px]">
+                  <p className="text-[9.5px] sm:text-[10px] text-neutral-300 leading-relaxed line-clamp-3 font-normal">
+                    {truncatedExcerpt}
+                  </p>
+                  {/* Blur fade overlay */}
+                  <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent backdrop-blur-[1px] flex items-end justify-center pb-0.5 pointer-events-none">
+                    <span className="text-[9px] text-adidaya-red font-bold tracking-widest">
+                      •••
                     </span>
-                  ))}
-                </div>
-              )}
-
-              {/* SPILL TEASER WITH BLUR FADE OVERLAY */}
-              <div className="relative overflow-hidden max-h-[76px]">
-                <p className="text-[9.5px] sm:text-[10px] text-neutral-300 leading-relaxed line-clamp-3 font-normal">
-                  {truncatedExcerpt}
-                </p>
-                {/* Blur fade overlay */}
-                <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent backdrop-blur-[1px] flex items-end justify-center pb-0.5 pointer-events-none">
-                  <span className="text-[9px] text-adidaya-red font-bold tracking-widest">
-                    •••
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
-            <div className="relative z-10 mx-3.5 mb-3.5 flex items-end justify-between gap-2">
-              {/* Left: Pill & Real Adidaya Logo */}
-              <div className="flex flex-col items-start gap-1.5 min-w-0">
-                {/* Read more pill (only around the text, not full width) */}
-                <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-sm">
-                  <span className="text-[9px] sm:text-[9.5px] font-medium text-neutral-300 whitespace-nowrap">
-                    Read more on <span className="font-semibold text-white">adidayastudio.id</span>
-                  </span>
-                </div>
-
-                {/* Real Adidaya Logo & Wordmark */}
-                <div className="flex items-center gap-1.5 pl-0.5 text-neutral-400 opacity-85">
-                  <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
-                  <span className="text-[7.5px] uppercase tracking-[0.22em] font-medium text-neutral-300">
-                    <span className="font-bold text-white">adidaya</span>{" "}
-                    <span className="font-light text-neutral-400">studio</span>
-                  </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Right: Big QR Code (vector SVG, 100% reliable) */}
-              {qrSvg && (
-                <div
-                  className="w-10 h-10 rounded-lg bg-white p-1 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-                  dangerouslySetInnerHTML={{ __html: qrSvg }}
-                />
-              )}
+              {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
+              <div className="relative z-10 mx-3.5 mb-3.5 flex items-end justify-between gap-2">
+                {/* Left: Pill & Real Adidaya Logo */}
+                <div className="flex flex-col items-start gap-1.5 min-w-0">
+                  {/* Read more pill (only around the text, not full width) */}
+                  <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-sm">
+                    <span className="text-[9px] sm:text-[9.5px] font-medium text-neutral-300 whitespace-nowrap">
+                      Read more on <span className="font-semibold text-white">adidayastudio.id</span>
+                    </span>
+                  </div>
+
+                  {/* Real Adidaya Logo & Wordmark */}
+                  <div className="flex items-center gap-1.5 pl-0.5 text-neutral-400 opacity-85">
+                    <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
+                    <span className="text-[7.5px] uppercase tracking-[0.22em] font-medium text-neutral-300">
+                      <span className="font-bold text-white">adidaya</span>{" "}
+                      <span className="font-light text-neutral-400">studio</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right: Big QR Code (vector SVG, 100% reliable) */}
+                {qrSvg && (
+                  <div
+                    className="w-10 h-10 rounded-lg bg-white p-1 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+                    dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ACTION BUTTONS (DOWNLOAD, SHARE, COPY LINK) - PILL SHAPE */}
           <div className="grid grid-cols-3 gap-2.5 w-full max-w-[340px] mt-5">
@@ -562,308 +682,529 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           overflow: "hidden",
         }}
       >
-        <div
-          ref={exportStoryRef}
-          style={{
-            width: 1080,
-            height: 1920,
-            backgroundColor: "#09090b",
-            color: "#ffffff",
-            position: "relative",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* HERO IMAGE (FULL TOP BLEED) */}
+        {data.type === "career" ? (
+          /* DEDICATED CAREER HIGH-RES EXPORT CANVAS (ALL FIELDS) */
           <div
+            ref={exportStoryRef}
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 1240,
-              overflow: "hidden",
+              width: 1080,
+              height: 1920,
+              backgroundColor: "#09090b",
+              color: "#ffffff",
+              padding: "85px 75px 75px 75px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+              boxSizing: "border-box",
+              backgroundImage: "linear-gradient(to bottom, #16161a 0%, #0d0d10 50%, #09090b 100%)",
             }}
           >
-            {activeImage ? (
-              <>
-                <img
-                  src={activeImage}
-                  alt={data.title}
-                  crossOrigin="anonymous"
+            {/* TOP BRAND BAR */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  backgroundColor: "rgba(255, 255, 255, 0.06)",
+                  padding: "12px 28px",
+                  borderRadius: 9999,
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                }}
+              >
+                <AdidayaLogoIcon style={{ width: 24, height: 24, display: "block" }} />
+                <span
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  ADIDAYA STUDIO
+                </span>
+              </div>
+
+              <div
+                style={{
+                  backgroundColor: "#E53935",
+                  color: "#FFFFFF",
+                  padding: "12px 30px",
+                  borderRadius: 9999,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  boxShadow: "0 6px 20px rgba(229, 57, 53, 0.4)",
+                }}
+              >
+                WE'RE HIRING
+              </div>
+            </div>
+
+            {/* POSITION TITLE */}
+            <div style={{ margin: "16px 0 20px 0" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <span style={{ color: "#E53935", fontSize: 64, fontWeight: 800, lineHeight: 1 }}>*</span>
+                <h1
+                  style={{
+                    fontSize: 56,
+                    fontWeight: 800,
+                    lineHeight: 1.15,
+                    letterSpacing: "-0.02em",
+                    color: "#FFFFFF",
+                    margin: 0,
+                  }}
+                >
+                  {data.title}
+                </h1>
+              </div>
+            </div>
+
+            {/* 2-COLUMN KEY SPECS GRID */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "28px 40px",
+                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                borderRadius: 24,
+                padding: "36px 40px",
+              }}
+            >
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>TYPE</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.jobType || "Full time"}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>DIVISION</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.division || "Architecture and Design"}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.skills || "Archicad, AutoCAD, SketchUp"}</span>
+              </div>
+            </div>
+
+            {/* DESCRIPTION BULLETS */}
+            {data.descriptionList && data.descriptionList.length > 0 && (
+              <div style={{ margin: "16px 0" }}>
+                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.14em", color: "#71717A", fontWeight: 700, display: "block", marginBottom: 12 }}>DESCRIPTION</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {data.descriptionList.slice(0, 5).map((item, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 20, color: "#D4D4D8", lineHeight: 1.4 }}>
+                      <span style={{ color: "#E53935", fontWeight: 700 }}>•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* APPLICATION NOTE */}
+            <div
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: 20,
+                padding: "24px 32px",
+                fontSize: 18,
+                color: "#A1A1AA",
+                lineHeight: 1.6,
+              }}
+            >
+              <div style={{ marginBottom: 6 }}>
+                Please send your CV and portfolio to:{" "}
+                <strong style={{ color: "#FFFFFF", fontWeight: 700 }}>{data.email || "adidayastudio@gmail.com"}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, color: "#71717A" }}>
+                <span>Subject: <strong style={{ color: "#D4D4D8" }}>{data.subject || "AD_YourName"}</strong></span>
+                <span>File: <strong style={{ color: "#D4D4D8" }}>{data.fileNote || "PDF, max. 5 MB"}</strong></span>
+              </div>
+            </div>
+
+            {/* BOTTOM PILL & QR */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: 30,
+                paddingTop: 10,
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 16 }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    borderRadius: 9999,
+                    padding: "12px 26px",
+                  }}
+                >
+                  <span style={{ fontSize: 22, fontWeight: 500, color: "#D4D4D8" }}>
+                    Read more on <strong style={{ color: "#FFFFFF" }}>adidayastudio.id</strong>
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 4, opacity: 0.85 }}>
+                  <AdidayaLogoIcon style={{ width: 18, height: 18, display: "block" }} />
+                  <span style={{ fontSize: 13, letterSpacing: "0.22em", textTransform: "uppercase", color: "#A1A1AA" }}>
+                    <strong style={{ color: "#FFFFFF" }}>adidaya</strong> studio
+                  </span>
+                </div>
+              </div>
+
+              {qrSvg && (
+                <div
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    padding: 10,
+                    borderRadius: 18,
+                    border: "2px solid rgba(255, 255, 255, 0.4)",
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+                    width: 120,
+                    height: 120,
+                    boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          /* PROJECT & INSIGHT HIGH-RES EXPORT CANVAS */
+          <div
+            ref={exportStoryRef}
+            style={{
+              width: 1080,
+              height: 1920,
+              backgroundColor: "#09090b",
+              color: "#ffffff",
+              position: "relative",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* HERO IMAGE (FULL TOP BLEED) */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 1240,
+                overflow: "hidden",
+              }}
+            >
+              {activeImage ? (
+                <>
+                  <img
+                    src={activeImage}
+                    alt={data.title}
+                    crossOrigin="anonymous"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      display: "block",
+                    }}
+                  />
+                  {/* Top ambient vignette */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 140,
+                      background: "linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%)",
+                    }}
+                  />
+                  {/* Bottom subtle dark fade */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 280,
+                      background:
+                        "linear-gradient(to top, #09090b 0%, rgba(9,9,11,0.6) 50%, transparent 100%)",
+                    }}
+                  />
+                </>
+              ) : (
+                <div
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center",
-                    display: "block",
+                    background: "linear-gradient(to bottom, #1f1f23, #09090b)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 />
-                {/* Top ambient vignette */}
+              )}
+            </div>
+
+            {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
+            <div
+              style={{
+                position: "relative",
+                zIndex: 10,
+                padding: "0 65px",
+                marginTop: "auto",
+                marginBottom: 24,
+              }}
+            >
+              {/* TITLE & SUBTITLE */}
+              <div style={{ marginBottom: 18 }}>
+                <h1
+                  style={{
+                    fontSize: 52,
+                    fontWeight: 800,
+                    lineHeight: 1.18,
+                    letterSpacing: "-0.02em",
+                    color: "#FFFFFF",
+                    margin: data.subtitle ? "0 0 10px 0" : "0",
+                  }}
+                >
+                  {data.title}
+                </h1>
+
+                {data.subtitle && (
+                  <p
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 500,
+                      lineHeight: 1.35,
+                      color: "#D4D4D8",
+                      margin: 0,
+                    }}
+                  >
+                    {data.subtitle}
+                  </p>
+                )}
+              </div>
+
+              {/* META CHIPS (CLEAN CHIPS) */}
+              {metaChips.length > 0 && (
                 <div
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 140,
-                    background: "linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%)",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 12,
+                    marginBottom: 22,
                   }}
-                />
-                {/* Bottom subtle dark fade */}
+                >
+                  {metaChips.map((m, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        padding: "8px 24px",
+                        borderRadius: 9999,
+                        backgroundColor: "rgba(255, 255, 255, 0.08)",
+                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                        fontSize: 18,
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        color: "#E4E4E7",
+                      }}
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* DESCRIPTION TEASER WITH FADE OVERLAY */}
+              <div
+                style={{
+                  position: "relative",
+                  maxHeight: 220,
+                  overflow: "hidden",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 26,
+                    lineHeight: 1.55,
+                    color: "#D4D4D8",
+                    margin: 0,
+                    fontWeight: 400,
+                  }}
+                >
+                  {truncatedExcerpt}
+                </p>
+
+                {/* Blur / Gradient Fade */}
                 <div
                   style={{
                     position: "absolute",
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    height: 280,
+                    height: 90,
                     background:
-                      "linear-gradient(to top, #09090b 0%, rgba(9,9,11,0.6) 50%, transparent 100%)",
-                  }}
-                />
-              </>
-            ) : (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background: "linear-gradient(to bottom, #1f1f23, #09090b)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              />
-            )}
-          </div>
-
-          {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
-          <div
-            style={{
-              position: "relative",
-              zIndex: 10,
-              padding: "0 65px",
-              marginTop: "auto",
-              marginBottom: 24,
-            }}
-          >
-            {/* TITLE & SUBTITLE */}
-            <div style={{ marginBottom: 18 }}>
-              <h1
-                style={{
-                  fontSize: 52,
-                  fontWeight: 800,
-                  lineHeight: 1.18,
-                  letterSpacing: "-0.02em",
-                  color: "#FFFFFF",
-                  margin: data.subtitle ? "0 0 10px 0" : "0",
-                }}
-              >
-                {data.title}
-              </h1>
-
-              {data.subtitle && (
-                <p
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 500,
-                    lineHeight: 1.35,
-                    color: "#D4D4D8",
-                    margin: 0,
+                      "linear-gradient(to top, rgba(9, 9, 11, 1) 20%, rgba(9, 9, 11, 0.8) 60%, transparent 100%)",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                    paddingBottom: 6,
                   }}
                 >
-                  {data.subtitle}
-                </p>
-              )}
-            </div>
-
-            {/* META CHIPS (CLEAN CHIPS) */}
-            {metaChips.length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 12,
-                  marginBottom: 22,
-                }}
-              >
-                {metaChips.map((m, i) => (
                   <span
-                    key={i}
                     style={{
-                      padding: "8px 24px",
-                      borderRadius: 9999,
-                      backgroundColor: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                      fontSize: 18,
-                      fontWeight: 600,
-                      letterSpacing: "0.04em",
-                      color: "#E4E4E7",
+                      fontSize: 24,
+                      letterSpacing: "0.3em",
+                      color: "#E53935",
+                      fontWeight: 700,
                     }}
                   >
-                    {m}
+                    •••
                   </span>
-                ))}
-              </div>
-            )}
-
-            {/* DESCRIPTION TEASER WITH FADE OVERLAY */}
-            <div
-              style={{
-                position: "relative",
-                maxHeight: 220,
-                overflow: "hidden",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: 26,
-                  lineHeight: 1.55,
-                  color: "#D4D4D8",
-                  margin: 0,
-                  fontWeight: 400,
-                }}
-              >
-                {truncatedExcerpt}
-              </p>
-
-              {/* Blur / Gradient Fade */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 90,
-                  background:
-                    "linear-gradient(to top, rgba(9, 9, 11, 1) 20%, rgba(9, 9, 11, 0.8) 60%, transparent 100%)",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  paddingBottom: 6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 24,
-                    letterSpacing: "0.3em",
-                    color: "#E53935",
-                    fontWeight: 700,
-                  }}
-                >
-                  •••
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
-          <div
-            style={{
-              position: "relative",
-              zIndex: 10,
-              margin: "0 65px 65px 65px",
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: 30,
-            }}
-          >
-            {/* Left: Pill & Real Adidaya Logo */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: 16,
-              }}
-            >
-              {/* Read more pill (only around the text, not full width) */}
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.08)",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                  borderRadius: 9999,
-                  padding: "12px 26px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 500,
-                    color: "#D4D4D8",
-                    letterSpacing: "0.01em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Read more on{" "}
-                  <span style={{ fontWeight: 700, color: "#FFFFFF" }}>
-                    adidayastudio.id
-                  </span>
-                </span>
-              </div>
-
-              {/* Real Adidaya Logo & Wordmark */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  paddingLeft: 4,
-                  opacity: 0.85,
-                }}
-              >
-                <AdidayaLogoIcon
-                  style={{
-                    width: 18,
-                    height: 18,
-                    display: "block",
-                  }}
-                />
-                <div
-                  style={{
-                    fontSize: 13,
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "#A1A1AA",
-                  }}
-                >
-                  <span style={{ fontWeight: 800, color: "#FFFFFF" }}>adidaya</span>{" "}
-                  <span style={{ fontWeight: 300, color: "#A1A1AA" }}>studio</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Big QR Code (vector SVG, 100% reliable) */}
-            {qrSvg && (
+            {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
+            <div
+              style={{
+                position: "relative",
+                zIndex: 10,
+                margin: "0 65px 65px 65px",
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: 30,
+              }}
+            >
+              {/* Left: Pill & Real Adidaya Logo */}
               <div
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  padding: 10,
-                  borderRadius: 18,
-                  border: "2px solid rgba(255, 255, 255, 0.4)",
-                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
-                  width: 130,
-                  height: 130,
-                  boxSizing: "border-box",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 16,
                 }}
-                dangerouslySetInnerHTML={{
-                  __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
-                }}
-              />
-            )}
+              >
+                {/* Read more pill (only around the text, not full width) */}
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    borderRadius: 9999,
+                    padding: "12px 26px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 500,
+                      color: "#D4D4D8",
+                      letterSpacing: "0.01em",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Read more on{" "}
+                    <span style={{ fontWeight: 700, color: "#FFFFFF" }}>
+                      adidayastudio.id
+                    </span>
+                  </span>
+                </div>
+
+                {/* Real Adidaya Logo & Wordmark */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 4,
+                    opacity: 0.85,
+                  }}
+                >
+                  <AdidayaLogoIcon
+                    style={{
+                      width: 18,
+                      height: 18,
+                      display: "block",
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: 13,
+                      letterSpacing: "0.22em",
+                      textTransform: "uppercase",
+                      color: "#A1A1AA",
+                    }}
+                  >
+                    <span style={{ fontWeight: 800, color: "#FFFFFF" }}>adidaya</span>{" "}
+                    <span style={{ fontWeight: 300, color: "#A1A1AA" }}>studio</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Big QR Code (vector SVG, 100% reliable) */}
+              {qrSvg && (
+                <div
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    padding: 10,
+                    borderRadius: 18,
+                    border: "2px solid rgba(255, 255, 255, 0.4)",
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+                    width: 130,
+                    height: 130,
+                    boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
+                  }}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

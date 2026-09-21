@@ -176,11 +176,13 @@ export default function CareerSection() {
                     </p>
                     <p>
                       <span className="font-semibold text-white">Email:</span>{" "}
-                      {job.email}
+                      {job.email && !job.email.includes("career@adidayastudio.id")
+                        ? job.email
+                        : "adidayastudio@gmail.com"}
                     </p>
                     <p>
                       <span className="font-semibold text-white">Subject:</span>{" "}
-                      {job.subject}
+                      {job.subject || "AD_YourName"}
                     </p>
                     <p>
                       <span className="font-semibold text-white">File:</span>{" "}
@@ -242,14 +244,19 @@ export default function CareerSection() {
             type: "career",
             title: shareJob.title,
             category: shareJob.division || "Career",
-            meta: [
-              shareJob.type,
-              shareJob.division,
-              shareJob.education,
-              shareJob.experience?.split("\n")[0] || "",
-              shareJob.deadline ? `Deadline: ${shareJob.deadline}` : "",
-            ].filter(Boolean),
-            excerpt: shareJob.description?.join(". ") || `Requirements: ${shareJob.skills || ""}`,
+            jobType: shareJob.type,
+            division: shareJob.division,
+            education: shareJob.education,
+            experience: shareJob.experience,
+            skills: shareJob.skills,
+            deadline: shareJob.deadline,
+            descriptionList: shareJob.description,
+            email:
+              shareJob.email && !shareJob.email.includes("career@adidayastudio.id")
+                ? shareJob.email
+                : "adidayastudio@gmail.com",
+            subject: shareJob.subject || "AD_YourName",
+            fileNote: shareJob.fileNote || "PDF, max. 5 MB",
             url: typeof window !== "undefined" ? `${window.location.origin}/networks#career` : undefined,
           }}
         />
