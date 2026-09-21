@@ -565,17 +565,17 @@ export default function VirtualIdCardPage({
             <div className="flex-1 py-4 space-y-3.5 overflow-y-auto max-h-[220px] pr-0.5 scrollbar-none flex flex-col justify-center">
               {/* Phone */}
               {showPhone && person.phone && (
-                <div className="flex items-center justify-between text-xs py-0.5">
-                  <span className="text-xs text-neutral-400 font-normal">
+                <div className="flex items-center justify-between text-xs py-0.5 gap-2">
+                  <span className="text-xs text-neutral-400 font-normal shrink-0">
                     Phone / WA
                   </span>
                   <a
                     href={getWhatsAppLink(person.phone)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center gap-1.5"
+                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center justify-end gap-1.5 min-w-0"
                   >
-                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors">
+                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors text-right">
                       {person.phone}
                     </span>
                     <ExternalLink className="h-3 w-3 text-neutral-600 group-hover:text-adidaya-red group-active:text-red-400 transition-colors shrink-0" />
@@ -585,15 +585,15 @@ export default function VirtualIdCardPage({
 
               {/* Work Email */}
               {showWorkEmail && person.email && (
-                <div className="flex items-center justify-between text-xs py-0.5">
-                  <span className="text-xs text-neutral-400 font-normal">
+                <div className="flex items-center justify-between text-xs py-0.5 gap-2">
+                  <span className="text-xs text-neutral-400 font-normal shrink-0">
                     Work Email
                   </span>
                   <a
                     href={`mailto:${person.email}`}
-                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 truncate max-w-[175px] transition-colors flex items-center gap-1.5"
+                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center justify-end gap-1.5 min-w-0"
                   >
-                    <span className="truncate group-hover:text-adidaya-red group-active:text-red-400 transition-colors">
+                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors text-right break-all">
                       {person.email}
                     </span>
                     <ExternalLink className="h-3 w-3 text-neutral-600 group-hover:text-adidaya-red group-active:text-red-400 transition-colors shrink-0" />
@@ -603,15 +603,15 @@ export default function VirtualIdCardPage({
 
               {/* Personal Email */}
               {showPersonalEmail && person.personal_email && (
-                <div className="flex items-center justify-between text-xs py-0.5">
-                  <span className="text-xs text-neutral-400 font-normal">
+                <div className="flex items-center justify-between text-xs py-0.5 gap-2">
+                  <span className="text-xs text-neutral-400 font-normal shrink-0">
                     Personal Email
                   </span>
                   <a
                     href={`mailto:${person.personal_email}`}
-                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 truncate max-w-[175px] transition-colors flex items-center gap-1.5"
+                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center justify-end gap-1.5 min-w-0"
                   >
-                    <span className="truncate group-hover:text-adidaya-red group-active:text-red-400 transition-colors">
+                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors text-right break-all">
                       {person.personal_email}
                     </span>
                     <ExternalLink className="h-3 w-3 text-neutral-600 group-hover:text-adidaya-red group-active:text-red-400 transition-colors shrink-0" />
@@ -621,8 +621,8 @@ export default function VirtualIdCardPage({
 
               {/* LinkedIn */}
               {showLinkedIn && person.linkedin && (
-                <div className="flex items-center justify-between text-xs py-0.5">
-                  <span className="text-xs text-neutral-400 font-normal">
+                <div className="flex items-center justify-between text-xs py-0.5 gap-2">
+                  <span className="text-xs text-neutral-400 font-normal shrink-0">
                     LinkedIn
                   </span>
                   <a
@@ -633,9 +633,9 @@ export default function VirtualIdCardPage({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center gap-1.5"
+                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center justify-end gap-1.5 min-w-0"
                   >
-                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors">
+                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors text-right">
                       {person.linkedin.replace(
                         /https?:\/\/(www\.)?linkedin\.com\/in\/?/,
                         ""
@@ -648,8 +648,8 @@ export default function VirtualIdCardPage({
 
               {/* Instagram */}
               {showInstagram && person.instagram && (
-                <div className="flex items-center justify-between text-xs py-0.5">
-                  <span className="text-xs text-neutral-400 font-normal">
+                <div className="flex items-center justify-between text-xs py-0.5 gap-2">
+                  <span className="text-xs text-neutral-400 font-normal shrink-0">
                     Instagram
                   </span>
                   <a
@@ -660,9 +660,9 @@ export default function VirtualIdCardPage({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center gap-1.5"
+                    className="group text-xs text-neutral-200 hover:text-adidaya-red active:text-red-400 transition-colors flex items-center justify-end gap-1.5 min-w-0"
                   >
-                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors">
+                    <span className="group-hover:text-adidaya-red group-active:text-red-400 transition-colors text-right">
                       {person.instagram.startsWith("@")
                         ? person.instagram
                         : `@${person.instagram
