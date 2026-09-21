@@ -34,14 +34,14 @@ export default function NetworkPage() {
   }, [activeTab]);
 
   return (
-    <main className="min-h-screen bg-adidaya-black text-white flex flex-col items-center pt-16 pb-24">
+    <main className="min-h-screen bg-adidaya-black text-white flex flex-col items-center pt-16 pb-24 px-6 sm:px-8 md:px-10">
       {/* Title */}
       <h1 className="text-center text-5xl font-bold mb-12 tracking-tight">
         <span className="text-adidaya-red">*</span> Networks
       </h1>
 
       {/* Tabs */}
-      <div className="flex justify-center mb-16 px-4 max-w-full">
+      <div className="flex justify-center mb-16 px-2 max-w-full">
         <div
           ref={dockRef}
           className="border border-adidaya-red rounded-full p-2 flex gap-2 overflow-x-auto no-scrollbar max-w-full relative"
@@ -97,7 +97,7 @@ export default function NetworkPage() {
       </div>
 
       {/* Content */}
-      <section className="w-full max-w-5xl px-4">
+      <section className="w-full max-w-5xl">
         {activeTab === "contact" ? <ContactSection /> : <CareerSection />}
       </section>
     </main>

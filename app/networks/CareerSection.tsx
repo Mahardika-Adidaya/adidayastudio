@@ -98,18 +98,18 @@ export default function CareerSection() {
         const isOpen = job.id === openId;
 
         return (
-          <div key={job.id} className="py-8">
+          <div key={job.id} className="py-6 sm:py-8">
             {/* HEADER */}
             <button
-              className="w-full flex items-center justify-between group py-4"
+              className="w-full flex items-center justify-between group py-3 sm:py-4 gap-4 text-left cursor-pointer select-none"
               onClick={() => setOpenId(isOpen ? null : job.id)}
             >
               {/* LEFT TITLE */}
-              <div className="flex items-center gap-3">
-                <span className="text-red-500 text-xl">*</span>
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <span className="text-adidaya-red text-xl font-bold leading-none shrink-0">*</span>
                 <span
                   className={`
-                    text-lg sm:text-xl font-semibold transition-colors duration-200
+                    text-base sm:text-xl font-semibold transition-colors duration-200
                     group-hover:text-adidaya-red
                   `}
                 >
@@ -118,7 +118,7 @@ export default function CareerSection() {
               </div>
 
               {/* RIGHT SIDE */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 sm:gap-6 shrink-0 pl-2">
                 {!isOpen && (
                   <div className="hidden sm:flex items-center gap-4 text-xs text-gray-500 leading-none">
                     <span>{job.type}</span>
@@ -132,7 +132,7 @@ export default function CareerSection() {
                 )}
 
                 {/* ICON */}
-                <span className="text-2xl text-gray-400 group-hover:text-adidaya-red transition-colors leading-none flex items-center translate-y-[-3px]">
+                <span className="text-2xl text-gray-400 group-hover:text-adidaya-red transition-colors leading-none flex items-center translate-y-[-3px] pr-2.5 sm:pr-3">
                   {isOpen ? "−" : "+"}
                 </span>
               </div>
@@ -146,14 +146,13 @@ export default function CareerSection() {
             >
               <div className="overflow-hidden">
                 {/* GRID INFO */}
-                <div className="mt-6 grid gap-8 md:grid-cols-4 text-sm leading-relaxed">
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8 text-xs sm:text-sm leading-relaxed">
                   <Info label="Type" value={job.type} />
                   <Info label="Division" value={job.division} />
                   <Info label="Education" value={job.education} />
                   <Info label="Deadline" value={job.deadline} />
                   <Info label="Experience" value={job.experience} />
-                  <Info label="Skill" value={formatSkills(job.skills)} />
-
+                  <Info label="Skill" value={formatSkills(job.skills)} className="col-span-2" />
                 </div>
 
                 {/* DESCRIPTION */}
@@ -194,10 +193,10 @@ export default function CareerSection() {
                   <button
                     type="button"
                     onClick={() => setShareJob(job)}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-xs text-white transition-all backdrop-blur-md cursor-pointer select-none shadow-sm hover:scale-105 active:scale-95 shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-xs text-white transition-all backdrop-blur-md cursor-pointer select-none shadow-sm hover:scale-105 active:scale-95 shrink-0 self-start sm:self-auto"
                   >
                     <Share2 size={13} strokeWidth={1.75} />
-                    <span>Share Position & Story</span>
+                    <span>Share</span>
                   </button>
                 </div>
               </div>
@@ -265,9 +264,17 @@ export default function CareerSection() {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div>
+    <div className={className}>
       <p className="uppercase tracking-[0.18em] text-[10px] text-gray-500 mb-1">
         {label}
       </p>
