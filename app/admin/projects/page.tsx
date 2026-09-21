@@ -61,6 +61,7 @@ type Project = {
   building_floors?: string | null;
 
   team_members: { name: string; role: string }[] | null;
+  description_html?: string | null;
 
   hero_image: string | null;
   is_published: boolean;
@@ -1112,6 +1113,7 @@ export default function AdminProjectListPage() {
                 shareProject.building_floors ? `${shareProject.building_floors}` : "",
               ].filter(Boolean),
               imageUrl: shareProject.hero_image,
+              excerpt: shareProject.description_html,
               url: typeof window !== "undefined" ? `${window.location.origin}/projects/${shareProject.slug || shareProject.id}` : undefined,
             }}
           />

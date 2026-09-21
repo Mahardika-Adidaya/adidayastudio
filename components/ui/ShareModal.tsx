@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { toPng, toJpeg } from "html-to-image";
+import { motion } from "framer-motion";
+import { toJpeg, toPng } from "html-to-image";
 import QRCode from "qrcode";
 import { toast } from "react-hot-toast";
 import {
@@ -11,11 +11,7 @@ import {
   Copy,
   Check,
   Download,
-  QrCode as QrIcon,
   Sparkles,
-  Smartphone,
-  Globe,
-  Send,
   Loader2,
 } from "lucide-react";
 
@@ -57,16 +53,78 @@ function stripHtml(html?: string | null): string {
     .trim();
 }
 
+function AdidayaLogoIcon({
+  className = "w-4 h-4",
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 964.35 1080"
+      className={className}
+      style={style}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill="#e53935"
+        d="M594.49,903.79h-228.27c-11.87,13.85-19.27,29.88-26.63,46.08-11.98,26.37-24.48,52.51-37.04,78.61-22.58,46.93-92.55,66.66-141.78,37.26-51.77-30.92-62.49-101.56-34.65-143.17,16.71-24.96,35.58-48.51,54.05-72.25,37.65-48.36,75.68-96.42,113.57-144.59,20.65-26.26,41.66-52.24,61.86-78.84,9.22-12.15,20.39-23.37,25.76-41.41-7.42.78-12.75.84-17.85,1.94-71.85,15.58-143.67,31.34-215.51,46.95-10.89,2.37-21.82,4.98-32.87,6.08-41.21,4.08-74.44-10.21-97.88-44.9-21.18-31.34-21.71-64.89-7.9-98.88,11.5-28.31,51.09-63.38,96.47-60.16,19.97,1.42,39.82,4.76,59.67,7.65,66.15,9.65,132.27,19.54,198.44,29.14,3.89.56,8.02-.59,14.77-1.18-6-16.1-16.08-26.52-24.76-37.56-50.95-64.85-102.22-129.45-153.28-194.21-17.93-22.74-35.35-45.89-53.44-68.5-26.39-32.97-30.18-70.02-13.69-106.91C149.95,28.25,180.6,5.83,221.41.97c51.94-6.19,90.43,17.48,111.64,66.07,45.48,104.18,91.23,208.23,137.04,312.26,3.47,7.87,8.37,15.1,12.23,21.96,12.77-.89,12.84-10.49,15.35-17.01,18.38-47.86,36.05-95.99,54.36-143.87,5.96-15.59,12.23-31.21,20.01-45.94,25.26-47.81,87.64-63.42,136.08-38.72,66.49,33.91,75.74,119,23.52,168.74-45.18,43.04-88.7,87.84-132.79,132.02-5.13,5.14-9.27,11.28-16.71,20.45,12.45-1.28,20.14-1.48,27.58-2.93,68.85-13.48,137.65-27.24,206.49-40.77,10.92-2.15,21.98-3.58,32.98-5.31,73.62-11.54,137.51,59.72,107.62,139.6-13.97,37.34-42.32,59.67-82.74,63.4-14.24,1.31-29.06.14-43.23-2.23-70.31-11.77-140.47-24.39-210.72-36.51-10.65-1.84-21.5-5.24-32.2-.68-2.31,11.33,6.02,17.05,11.23,23.59,58.33,73.23,116.98,146.19,175.58,219.2,16.04,19.98,32.84,39.4,48.06,59.99,9.2,12.44,18.2,25.81,23.57,40.15,18.31,48.88-1.16,100.05-46.49,126.29-17.4,10.07-34.7,19.33-56.07,19.27-41.55-.11-73.93-16.3-93.5-53.06-13.57-25.49-23.87-52.72-35.72-79.13-6.33-14.11-12.84-28.13-20.11-44.02ZM482.56,651.15c-2.42,1.41-5.27,2.05-6.02,3.66-23.27,50.31-46.39,100.7-69.27,151.19-1.2,2.65-.15,6.32-.15,10.03,3.26.81,6.3,2.24,9.35,2.24,44.36-.06,88.73-.31,133.09-.58,1.03,0,2.27-.54,3.03-1.25.7-.64.89-1.85,2.17-4.79-17.94-51.94-43.44-102.41-65.3-154.37-1.1-2.61-4.64-4.2-6.89-6.13Z"
+      />
+    </svg>
+  );
+}
+
+async function fetchImageAsBase64(url: string): Promise<string> {
+  if (url.startsWith("data:")) return url;
+  try {
+    const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Proxy error: ${res.statusText}`);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("FileReader result not string"));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn("fetchImageAsBase64 failed, using raw url:", err);
+    return url;
+  }
+}
+
+async function ensureAllImagesLoaded(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+  await Promise.all(
+    images.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        const done = () => resolve();
+        img.onload = done;
+        img.onerror = done;
+        if (img.decode) {
+          img.decode().then(done).catch(done);
+        } else {
+          setTimeout(done, 250);
+        }
+      });
+    })
+  );
+}
+
 export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
-  const [activeTab, setActiveTab] = useState<"story" | "link">("story");
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
-  const [canWebShare, setCanWebShare] = useState(false);
+  const [base64Image, setBase64Image] = useState<string | null>(null);
 
   // Hidden high-res export element reference (1080 x 1920)
   const exportStoryRef = useRef<HTMLDivElement>(null);
-  const [base64Image, setBase64Image] = useState<string | null>(null);
 
   // Helper to ensure production domain https://www.adidayastudio.id
   const getCanonicalUrl = (rawUrl?: string): string => {
@@ -87,21 +145,13 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     return url;
   };
 
-  // Determine current canonical URL
   const currentUrl = getCanonicalUrl(data?.url);
 
-  // Check Web Share API availability
-  useEffect(() => {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      setCanWebShare(true);
-    }
-  }, []);
-
-  // Generate QR Code data URL
+  // Generate QR Code data URL immediately
   useEffect(() => {
     if (isOpen && currentUrl) {
       QRCode.toDataURL(currentUrl, {
-        width: 320,
+        width: 400,
         margin: 1,
         color: {
           dark: "#000000",
@@ -113,31 +163,13 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     }
   }, [isOpen, currentUrl]);
 
-  // Convert hero image to base64 for reliable canvas capture without CORS locks
+  // Convert hero image to base64 via proxy to prevent CORS taint
   useEffect(() => {
     let isMounted = true;
     if (isOpen && data?.imageUrl) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-            if (isMounted) setBase64Image(dataUrl);
-          }
-        } catch {
-          if (isMounted) setBase64Image(data.imageUrl || null);
-        }
-      };
-      img.onerror = () => {
-        if (isMounted) setBase64Image(data.imageUrl || null);
-      };
-      img.src = data.imageUrl;
+      fetchImageAsBase64(data.imageUrl).then((b64) => {
+        if (isMounted) setBase64Image(b64);
+      });
     } else {
       setBase64Image(null);
     }
@@ -156,15 +188,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
       : cleanExcerpt ||
         (data.type === "career"
           ? "Explore this open position at Adidaya Studio and join our collective architecture & design journey."
-          : "Discover more project details, documentation, and design philosophies at Adidaya Studio.");
-
-  // Type metadata
-  const typeLabel =
-    data.type === "project"
-      ? "Architectural Portfolio"
-      : data.type === "insight"
-      ? "Editorial Insight"
-      : "Career Opportunity";
+          : "Discover more project details, documentation, and architectural philosophies at Adidaya Studio.");
 
   const categoryLabel =
     data.category ||
@@ -172,23 +196,30 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
       ? "Architecture"
       : data.type === "insight"
       ? "Editorial"
-      : "Recruitment");
+      : "Career");
 
-  // Format meta chips
+  // Format meta chips: Kota, Tahun, Status (e.g. Purwokerto, 2022 – 2023, Built)
   const metaChips: string[] = [];
-  if (data.location) metaChips.push(data.location);
-  if (data.year) metaChips.push(data.year);
-  if (data.status) metaChips.push(data.status);
-  if (data.author) metaChips.push(data.author);
-  if (data.date) metaChips.push(data.date);
-  if (data.readingTime) metaChips.push(`${data.readingTime} min read`);
-  if (data.meta && Array.isArray(data.meta)) {
-    data.meta.forEach((m) => {
-      if (typeof m === "string" && !metaChips.includes(m)) metaChips.push(m);
-      else if (typeof m === "object" && m?.value && !metaChips.includes(m.value)) {
-        metaChips.push(m.value);
-      }
-    });
+  if (data.type === "project") {
+    if (data.location) {
+      metaChips.push(data.location.split(",")[0].trim());
+    }
+    if (data.year) {
+      metaChips.push(data.year);
+    }
+    if (data.status) {
+      metaChips.push(data.status.charAt(0).toUpperCase() + data.status.slice(1));
+    }
+  } else if (data.type === "insight") {
+    if (data.author) metaChips.push(data.author);
+    if (data.date) metaChips.push(data.date);
+    if (data.readingTime) metaChips.push(`${data.readingTime} min read`);
+  } else if (data.type === "career") {
+    if (data.meta && Array.isArray(data.meta)) {
+      data.meta.slice(0, 3).forEach((m) => {
+        if (typeof m === "string" && m) metaChips.push(m);
+      });
+    }
   }
 
   // Copy Link action
@@ -201,54 +232,43 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     }
   };
 
-  // Social Share Handlers
-  const handleSocialShare = (platform: "wa" | "x" | "linkedin" | "telegram") => {
-    const text = `Check out "${data.title}" by Adidaya Studio:\n${currentUrl}`;
-    let shareUrl = "";
-
-    switch (platform) {
-      case "wa":
-        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        break;
-      case "x":
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          data.title
-        )}&url=${encodeURIComponent(currentUrl)}`;
-        break;
-      case "linkedin":
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-          currentUrl
-        )}`;
-        break;
-      case "telegram":
-        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(
-          currentUrl
-        )}&text=${encodeURIComponent(data.title)}`;
-        break;
-    }
-
-    if (shareUrl) {
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
-  // Render & Export Story Image
+  // Render & Export Story Image (1080 x 1920)
   const generateStoryDataUrl = async () => {
     if (!exportStoryRef.current) return null;
+
+    // 1. Ensure hero image base64 is ready
+    if (!base64Image && data?.imageUrl) {
+      const b64 = await fetchImageAsBase64(data.imageUrl);
+      setBase64Image(b64);
+    }
+
+    // 2. Ensure QR Code is ready
+    if (!qrDataUrl && currentUrl) {
+      const qr = await QRCode.toDataURL(currentUrl, {
+        width: 400,
+        margin: 1,
+        color: { dark: "#000000", light: "#FFFFFF" },
+      });
+      setQrDataUrl(qr);
+    }
+
+    // 3. Ensure all <img> elements inside exportStoryRef are loaded & decoded
+    await ensureAllImagesLoaded(exportStoryRef.current);
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
     try {
       return await toJpeg(exportStoryRef.current, {
         quality: 0.96,
-        pixelRatio: 2,
-        backgroundColor: "#080808",
-        skipFonts: true,
+        pixelRatio: 1,
+        backgroundColor: "#09090b",
+        cacheBust: false,
       });
     } catch (err) {
       console.warn("toJpeg failed, fallback to toPng:", err);
       return await toPng(exportStoryRef.current, {
-        pixelRatio: 2,
-        backgroundColor: "#080808",
-        skipFonts: true,
+        pixelRatio: 1,
+        backgroundColor: "#09090b",
+        cacheBust: false,
       });
     }
   };
@@ -328,8 +348,10 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     }
   };
 
+  const activeImage = base64Image || data.imageUrl;
+
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xl animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl animate-fade-in overflow-y-auto">
       {/* BACKGROUND CLICK TO CLOSE */}
       <div className="fixed inset-0" onClick={onClose} />
 
@@ -339,7 +361,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.94, y: 16 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-[420px] bg-[#0e0e10] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 flex flex-col max-h-[94vh] overflow-hidden"
+        className="relative z-10 w-full max-w-[420px] bg-[#0e0e10] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 flex flex-col max-h-[95vh] overflow-hidden"
       >
         {/* MODAL HEADER */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
@@ -362,91 +384,100 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
         </div>
 
         {/* MODAL BODY */}
-        <div className="p-6 flex flex-col items-center justify-center overflow-y-auto no-scrollbar">
-          {/* STORY LIVE PREVIEW CARD */}
-          <div className="w-[260px] sm:w-[280px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 p-3.5 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0">
-            {/* HERO IMAGE BACKGROUND / BANNER */}
-            {base64Image || data.imageUrl ? (
-              <div className="relative w-full h-[38%] rounded-xl overflow-hidden border border-white/10 shrink-0">
-                <img
-                  src={base64Image || data.imageUrl || ""}
-                  alt={data.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-black/40" />
-              </div>
-            ) : (
-              <div className="relative w-full h-[28%] rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 flex flex-col items-center justify-center text-center p-3 shrink-0">
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-adidaya-red mb-1">
-                  <Sparkles size={14} />
+        <div className="p-5 flex flex-col items-center justify-center overflow-y-auto no-scrollbar">
+          {/* STORY LIVE PREVIEW CARD (9:16 PORTRAIT WITH FULL TOP BLEED HERO) */}
+          <div className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0">
+            {/* HERO IMAGE FULL TOP BLEED BACKGROUND */}
+            <div className="absolute inset-x-0 top-0 h-[64%] overflow-hidden">
+              {activeImage ? (
+                <>
+                  <img
+                    src={activeImage}
+                    alt={data.title}
+                    className="w-full h-full object-cover object-center"
+                  />
+                  {/* Top subtle vignette */}
+                  <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent" />
+                  {/* Bottom fade - subtle so it doesn't cover the building */}
+                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#09090b] via-[#09090b]/60 to-transparent" />
+                </>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-b from-neutral-800 to-[#09090b] flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-adidaya-red mb-1">
+                    <Sparkles size={16} />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">
+                    ADIDAYA STUDIO
+                  </span>
                 </div>
-                <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-semibold">
-                  ADIDAYA STUDIO
-                </span>
-              </div>
-            )}
-
-            {/* BRAND HEADER & CATEGORY */}
-            <div className="flex items-center justify-between mt-2 px-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-adidaya-red shadow-[0_0_6px_#e53935]" />
-                <span className="text-[9px] uppercase tracking-[0.16em] text-neutral-300 font-bold">
-                  ADIDAYA STUDIO
-                </span>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[8px] font-semibold text-white uppercase tracking-wider">
-                {categoryLabel}
-              </span>
+              )}
             </div>
 
-            {/* TITLE & META */}
-            <div className="my-1.5 space-y-1">
-              <h3 className="text-xs sm:text-[13px] font-bold text-white leading-snug line-clamp-2">
+            {/* LOWER CONTENT: TITLE, METADATA CHIPS & TEASER TEXT */}
+            <div className="relative z-10 px-4 mt-auto mb-2.5 space-y-2">
+              {/* TITLE */}
+              <h3 className="text-base sm:text-[17px] font-bold text-white leading-tight tracking-tight line-clamp-2 drop-shadow-md">
                 {data.title}
               </h3>
+
+              {/* META CHIPS (3 CLEAN CHIPS) */}
               {metaChips.length > 0 && (
-                <div className="flex flex-wrap gap-1 text-[8px] text-neutral-400">
-                  {metaChips.slice(0, 3).map((chip, idx) => (
+                <div className="flex flex-wrap gap-1 text-[8px] text-neutral-300">
+                  {metaChips.map((chip, idx) => (
                     <span
                       key={idx}
-                      className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-neutral-300 font-medium"
+                      className="px-2.5 py-0.5 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-neutral-200 font-medium"
                     >
                       {chip}
                     </span>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* SPILL TEASER WITH BLUR FADE OVERLAY */}
-            <div className="relative flex-1 min-h-0 overflow-hidden my-1">
-              <p className="text-[9px] sm:text-[10px] text-neutral-300 leading-relaxed line-clamp-4">
-                {truncatedExcerpt}
-              </p>
-              {/* Blur overlay */}
-              <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent backdrop-blur-[1px] flex items-end justify-center pb-0.5 pointer-events-none">
-                <span className="text-[8px] text-adidaya-red/90 tracking-widest font-bold">
-                  •••
-                </span>
+              {/* SPILL TEASER WITH BLUR FADE OVERLAY */}
+              <div className="relative overflow-hidden max-h-[80px]">
+                <p className="text-[9.5px] sm:text-[10px] text-neutral-300 leading-relaxed line-clamp-3 font-normal">
+                  {truncatedExcerpt}
+                </p>
+                {/* Blur fade overlay */}
+                <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent backdrop-blur-[1px] flex items-end justify-center pb-0.5 pointer-events-none">
+                  <span className="text-[9px] text-adidaya-red font-bold tracking-widest">
+                    •••
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* READ MORE ON ADIDAYASTUDIO.ID FOOTER */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2 mt-auto">
-              <div className="min-w-0">
-                <p className="text-[9px] font-bold text-white uppercase tracking-wider truncate">
-                  Read on adidayastudio.id
-                </p>
-                <p className="text-[7.5px] text-neutral-400 truncate">
-                  Tap link sticker / scan QR
-                </p>
+            {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
+            <div className="relative z-10 mx-3.5 mb-3.5 flex items-end justify-between gap-2">
+              {/* Left: Pill & Real Adidaya Logo */}
+              <div className="flex flex-col items-start gap-1.5 min-w-0">
+                {/* Read more pill (only around the text, not full width) */}
+                <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-sm">
+                  <span className="text-[9px] sm:text-[9.5px] font-medium text-neutral-300 whitespace-nowrap">
+                    Read more on <span className="font-semibold text-white">adidayastudio.id</span>
+                  </span>
+                </div>
+
+                {/* Real Adidaya Logo & Wordmark */}
+                <div className="flex items-center gap-1.5 pl-0.5 text-neutral-400 opacity-85">
+                  <AdidayaLogoIcon className="w-2.5 h-2.5 shrink-0" />
+                  <span className="text-[7.5px] uppercase tracking-[0.22em] font-medium text-neutral-300">
+                    <span className="font-bold text-white">adidaya</span>{" "}
+                    <span className="font-light text-neutral-400">studio</span>
+                  </span>
+                </div>
               </div>
+
+              {/* Right: Big QR Code (outside pill) */}
               {qrDataUrl && (
-                <img
-                  src={qrDataUrl}
-                  alt="QR Code"
-                  className="w-7 h-7 rounded border border-white/20 bg-white p-0.5 shrink-0"
-                />
+                <div className="p-1 rounded-lg bg-white border border-white/30 shadow-md shrink-0">
+                  <img
+                    src={qrDataUrl}
+                    alt="QR Code"
+                    className="w-10 h-10 object-contain block"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -502,18 +533,20 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
       </motion.div>
 
       {/* =========================================================
-          HIDDEN HIGH-RESOLUTION EXPORT ELEMENT (1080 x 1920)
-          Used by html-to-image to generate razor-sharp 9:16 images
+          HIGH-RESOLUTION EXPORT CANVAS (1080 x 1920)
+          Identical layout to the preview, rendered in 1080x1920 HD
       ========================================================= */}
       <div
         style={{
           position: "fixed",
-          top: -99999,
-          left: -99999,
+          top: 0,
+          left: 0,
           width: 1080,
           height: 1920,
+          opacity: 0.001,
           pointerEvents: "none",
-          zIndex: -1,
+          zIndex: -9999,
+          overflow: "hidden",
         }}
       >
         <div
@@ -521,116 +554,62 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           style={{
             width: 1080,
             height: 1920,
-            backgroundColor: "#070709",
+            backgroundColor: "#09090b",
             color: "#ffffff",
-            padding: "80px 70px 70px 70px",
-            boxSizing: "border-box",
+            position: "relative",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-            position: "relative",
-            overflow: "hidden",
+            boxSizing: "border-box",
           }}
         >
-          {/* BACKGROUND AMBIENT GRADIENT & ARCHITECTURAL GRID */}
+          {/* HERO IMAGE (FULL TOP BLEED) */}
           <div
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              bottom: 0,
-              background:
-                "radial-gradient(circle at 80% 20%, rgba(229, 57, 53, 0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.04) 0%, transparent 60%)",
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* TOP SECTION: BRAND HEADER & CATEGORY */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              position: "relative",
-              zIndex: 2,
-              paddingBottom: 24,
-              borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: "50%",
-                  backgroundColor: "#E53935",
-                  boxShadow: "0 0 16px #E53935",
-                  display: "inline-block",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  letterSpacing: "0.22em",
-                  textTransform: "uppercase",
-                  color: "#FFFFFF",
-                }}
-              >
-                ADIDAYA STUDIO
-              </span>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: "#E53935",
-                color: "#FFFFFF",
-                padding: "8px 24px",
-                borderRadius: 9999,
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-              }}
-            >
-              {categoryLabel}
-            </div>
-          </div>
-
-          {/* HERO IMAGE CONTAINER */}
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              height: 720,
-              borderRadius: 36,
+              height: 1240,
               overflow: "hidden",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              margin: "36px 0",
-              zIndex: 2,
-              backgroundColor: "#111114",
             }}
           >
-            {base64Image || data.imageUrl ? (
+            {activeImage ? (
               <>
                 <img
-                  src={base64Image || data.imageUrl || ""}
+                  src={activeImage}
                   alt={data.title}
                   style={{
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
+                    objectPosition: "center",
                     display: "block",
                   }}
                 />
+                {/* Top ambient vignette */}
                 <div
                   style={{
                     position: "absolute",
-                    inset: 0,
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 140,
+                    background: "linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%)",
+                  }}
+                />
+                {/* Bottom subtle dark fade */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 280,
                     background:
-                      "linear-gradient(to top, rgba(7, 7, 9, 0.95) 0%, rgba(7, 7, 9, 0.2) 50%, rgba(0, 0, 0, 0.5) 100%)",
+                      "linear-gradient(to top, #09090b 0%, rgba(9,9,11,0.6) 50%, transparent 100%)",
                   }}
                 />
               </>
@@ -639,64 +618,61 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 style={{
                   width: "100%",
                   height: "100%",
+                  background: "linear-gradient(to bottom, #1f1f23, #09090b)",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "linear-gradient(135deg, #18181b 0%, #09090b 100%)",
                 }}
-              >
-                <div
-                  style={{
-                    fontSize: 48,
-                    fontWeight: 800,
-                    color: "#E53935",
-                    letterSpacing: "0.2em",
-                  }}
-                >
-                  *
-                </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 600,
-                    letterSpacing: "0.25em",
-                    color: "#A1A1AA",
-                    textTransform: "uppercase",
-                    marginTop: 12,
-                  }}
-                >
-                  {typeLabel}
-                </div>
-              </div>
+              />
             )}
           </div>
 
-          {/* MIDDLE: TITLE, METADATA & BLURRED TEASER */}
-          <div style={{ position: "relative", zIndex: 2, flex: 1, display: "flex", flexDirection: "column" }}>
-            {/* META TAGS ROW */}
+          {/* LOWER CONTENT: TITLE, METADATA CHIPS & TEASER TEXT */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              padding: "0 65px",
+              marginTop: "auto",
+              marginBottom: 26,
+            }}
+          >
+            {/* TITLE */}
+            <h1
+              style={{
+                fontSize: 54,
+                fontWeight: 800,
+                lineHeight: 1.18,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: "0 0 20px 0",
+              }}
+            >
+              {data.title}
+            </h1>
+
+            {/* META CHIPS (3 CLEAN CHIPS) */}
             {metaChips.length > 0 && (
               <div
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
                   gap: 12,
-                  marginBottom: 20,
+                  marginBottom: 22,
                 }}
               >
-                {metaChips.slice(0, 4).map((m, i) => (
+                {metaChips.map((m, i) => (
                   <span
                     key={i}
                     style={{
-                      padding: "8px 20px",
+                      padding: "8px 24px",
                       borderRadius: 9999,
                       backgroundColor: "rgba(255, 255, 255, 0.08)",
                       border: "1px solid rgba(255, 255, 255, 0.15)",
                       fontSize: 18,
                       fontWeight: 600,
-                      letterSpacing: "0.1em",
+                      letterSpacing: "0.04em",
                       color: "#E4E4E7",
-                      textTransform: "uppercase",
                     }}
                   >
                     {m}
@@ -705,33 +681,18 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               </div>
             )}
 
-            {/* TITLE */}
-            <h1
-              style={{
-                fontSize: 48,
-                fontWeight: 800,
-                lineHeight: 1.22,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                margin: "0 0 24px 0",
-              }}
-            >
-              {data.title}
-            </h1>
-
-            {/* TEASER TEXT WITH FADE & BLUR OVERLAY */}
+            {/* DESCRIPTION TEASER WITH FADE OVERLAY */}
             <div
               style={{
                 position: "relative",
-                flex: 1,
+                maxHeight: 220,
                 overflow: "hidden",
-                maxHeight: 280,
               }}
             >
               <p
                 style={{
                   fontSize: 26,
-                  lineHeight: 1.6,
+                  lineHeight: 1.55,
                   color: "#D4D4D8",
                   margin: 0,
                   fontWeight: 400,
@@ -740,87 +701,130 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 {truncatedExcerpt}
               </p>
 
-              {/* Smooth Blur and Gradient Fade Out */}
+              {/* Blur / Gradient Fade */}
               <div
                 style={{
                   position: "absolute",
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  height: 140,
+                  height: 90,
                   background:
-                    "linear-gradient(to top, rgba(7, 7, 9, 1) 15%, rgba(7, 7, 9, 0.85) 60%, transparent 100%)",
+                    "linear-gradient(to top, rgba(9, 9, 11, 1) 20%, rgba(9, 9, 11, 0.8) 60%, transparent 100%)",
                   display: "flex",
                   alignItems: "flex-end",
                   justifyContent: "center",
-                  paddingBottom: 10,
+                  paddingBottom: 6,
                 }}
               >
                 <span
                   style={{
-                    fontSize: 28,
-                    letterSpacing: "0.4em",
+                    fontSize: 24,
+                    letterSpacing: "0.3em",
                     color: "#E53935",
+                    fontWeight: 700,
                   }}
                 >
-                  •••••
+                  •••
                 </span>
               </div>
             </div>
           </div>
 
-          {/* BOTTOM SECTION: READ MORE BANNER + QR CODE */}
+          {/* BOTTOM SECTION: Left: Pill + Logo; Right: Big QR Code */}
           <div
             style={{
               position: "relative",
-              zIndex: 2,
-              backgroundColor: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              borderRadius: 36,
-              padding: "28px 36px",
+              zIndex: 10,
+              margin: "0 65px 65px 65px",
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-end",
               justifyContent: "space-between",
-              marginTop: 32,
+              gap: 30,
             }}
           >
-            <div>
+            {/* Left: Pill & Real Adidaya Logo */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 16,
+              }}
+            >
+              {/* Read more pill (only around the text, not full width) */}
               <div
                 style={{
-                  fontSize: 24,
-                  fontWeight: 800,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "#FFFFFF",
-                  marginBottom: 6,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  borderRadius: 9999,
+                  padding: "12px 26px",
                 }}
               >
-                READ MORE ON ADIDAYASTUDIO.ID
+                <span
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 500,
+                    color: "#D4D4D8",
+                    letterSpacing: "0.01em",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Read more on{" "}
+                  <span style={{ fontWeight: 700, color: "#FFFFFF" }}>
+                    adidayastudio.id
+                  </span>
+                </span>
               </div>
+
+              {/* Real Adidaya Logo & Wordmark */}
               <div
                 style={{
-                  fontSize: 18,
-                  color: "#A1A1AA",
-                  letterSpacing: "0.06em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  paddingLeft: 4,
+                  opacity: 0.85,
                 }}
               >
-                Swipe up or scan QR code to read full article & view documentation
+                <AdidayaLogoIcon
+                  style={{
+                    width: 18,
+                    height: 18,
+                    display: "block",
+                  }}
+                />
+                <div
+                  style={{
+                    fontSize: 13,
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "#A1A1AA",
+                  }}
+                >
+                  <span style={{ fontWeight: 800, color: "#FFFFFF" }}>adidaya</span>{" "}
+                  <span style={{ fontWeight: 300, color: "#A1A1AA" }}>studio</span>
+                </div>
               </div>
             </div>
 
+            {/* Right: Big QR Code (outside pill) */}
             {qrDataUrl && (
               <div
                 style={{
                   backgroundColor: "#FFFFFF",
-                  padding: 10,
-                  borderRadius: 20,
-                  border: "2px solid rgba(255, 255, 255, 0.3)",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                  padding: 8,
+                  borderRadius: 16,
+                  border: "2px solid rgba(255, 255, 255, 0.4)",
+                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+                  flexShrink: 0,
                 }}
               >
                 <img
                   src={qrDataUrl}
-                  alt="QR"
+                  alt="QR Code"
                   style={{ width: 110, height: 110, display: "block" }}
                 />
               </div>
