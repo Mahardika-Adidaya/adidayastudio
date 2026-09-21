@@ -299,37 +299,18 @@ export default function CreateInsightPage() {
       : [];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <main className="mx-auto max-w-5xl px-6 py-14 space-y-8">
+    <div className="min-h-screen bg-black text-white font-sans">
+      <main className="mx-auto max-w-5xl px-6 pt-14 pb-48 md:pb-56 space-y-8">
         
         {/* HEADER */}
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-              Admin • Insight
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold">
-              <span className="mr-2 text-[#E53935]">*</span>
-              Create New Insight
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={cancel}
-              className="rounded-full border border-white/20 px-5 py-2 text-sm text-gray-200 hover:bg-white/10"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={saveDraft}
-              disabled={saving}
-              className="rounded-full bg-[#E53935] px-6 py-2 text-sm font-semibold text-white hover:bg-white hover:text-[#E53935] disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save Draft"}
-            </button>
-          </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
+            Admin • Insight
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold">
+            <span className="mr-2 text-[#E53935]">*</span>
+            Create New Insight
+          </h1>
         </div>
 
         {/* TITLE */}
@@ -564,6 +545,32 @@ export default function CreateInsightPage() {
           </div>
         </section>
       </main>
+
+      {/* BOTTOM ACTION BAR (MATCHING FOOTER HEIGHT) */}
+      <div className="fixed inset-x-0 bottom-0 bg-[#050509]/95 border-t border-white/10 backdrop-blur-xl z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] py-6 md:py-8 px-4 sm:px-6">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+          <div className="text-xs sm:text-sm text-neutral-400 font-medium">
+            Save as draft to continue later.
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={cancel}
+              className="rounded-full border border-white/15 bg-white/5 px-6 py-2.5 text-xs font-medium text-neutral-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={saveDraft}
+              disabled={saving}
+              className="rounded-full border border-adidaya-red bg-adidaya-red px-7 py-2.5 text-xs font-semibold text-white shadow-lg shadow-red-900/40 transition hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {saving ? "Saving…" : "Save Draft"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

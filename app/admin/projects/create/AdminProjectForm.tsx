@@ -573,8 +573,8 @@ loadGallery();
 
   return (
     <>
-      <div className="min-h-screen bg-[#050509] text-gray-100">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 pb-32 pt-12 md:flex-row md:px-8">
+      <div className="min-h-screen bg-[#050509] text-gray-100 font-sans">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 pb-48 pt-12 md:flex-row md:px-8 md:pb-56">
           {/* ============= LEFT: FORM ============= */}
           <div className="w-full md:w-2/3">
             <h1 className="mb-2 text-3xl font-semibold text-white">
@@ -1217,24 +1217,24 @@ loadGallery();
           </div>
         </div>
 
-        {/* BOTTOM ACTION BAR */}
-        <div className="fixed inset-x-0 bottom-0 bg-[#050509]/90 border-t border-gray-800 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-8">
-            <div className="text-[11px] text-gray-500">
+        {/* BOTTOM ACTION BAR (SETINGGI FOOTER HALAMAN ASLI) */}
+        <div className="fixed inset-x-0 bottom-0 bg-[#050509]/95 border-t border-white/10 backdrop-blur-xl z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] py-6 md:py-8 px-4 sm:px-6">
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+            <div className="text-xs sm:text-sm text-neutral-400 font-medium">
               Save as draft to continue later.
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => router.push("/admin/projects")}
-                className="rounded-full border border-gray-600 px-5 py-2 text-xs text-gray-200 hover:border-gray-400 transition"
+                className="rounded-full border border-white/15 bg-white/5 px-6 py-2.5 text-xs font-medium text-neutral-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition shadow-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveDraft}
                 disabled={saving}
-                className="rounded-full border border-adidaya-red bg-adidaya-red px-6 py-2 text-xs font-medium text-white shadow-lg shadow-red-900/40 transition hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="rounded-full border border-adidaya-red bg-adidaya-red px-7 py-2.5 text-xs font-semibold text-white shadow-lg shadow-red-900/40 transition hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {saving ? "Saving..." : mode === "edit" ? "Save Changes" : "Save Draft"}
               </button>

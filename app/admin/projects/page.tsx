@@ -13,6 +13,8 @@ import {
   ArrowUpDown,
   Check,
   X,
+  Building2,
+  Edit2,
 } from "lucide-react";
 
 import {
@@ -930,23 +932,45 @@ export default function AdminProjectListPage() {
 
         {/* LIST */}
         {loading ? (
-          <div className="mt-10 text-center text-sm text-gray-500">
-            Loading...
+          <div className="mt-10 text-center text-xs text-neutral-500 py-12">
+            Loading projects...
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="mt-14 rounded-3xl border border-gray-800 bg-[#0a0a0a] px-10 py-14 text-center shadow-lg">
-            <p className="text-lg font-semibold text-gray-100">
-              No projects yet
+          <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center py-16 px-6">
+            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-neutral-400 mb-4 shadow-sm">
+              <Building2 size={20} strokeWidth={1.5} />
+            </div>
+            <p className="text-base sm:text-lg font-semibold text-white">
+              {search || categoryFilter !== "all" || statusFilter !== "all"
+                ? "No projects found"
+                : "No projects yet"}
             </p>
-            <p className="mt-2 text-sm text-gray-500">
-              Start by creating your first project.
+            <p className="text-xs sm:text-sm text-adidaya-text-muted mt-1.5 max-w-sm mx-auto">
+              {search || categoryFilter !== "all" || statusFilter !== "all"
+                ? "Try adjusting your search query or filter criteria."
+                : "Start by creating your first project portfolio."}
             </p>
-            <button
-              onClick={() => router.push("/admin/projects/create")}
-              className="mt-6 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black shadow hover:bg-adidaya-red hover:text-white"
-            >
-              + Create Project
-            </button>
+            {search || categoryFilter !== "all" || statusFilter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="mt-5 rounded-full border border-white/15 bg-white/5 px-5 py-2 text-xs font-medium text-white hover:bg-white/10 hover:border-white/30 transition shadow-sm"
+              >
+                Reset Filters
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push("/admin/projects/create")}
+                className="mt-5 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-black shadow-md hover:bg-adidaya-red hover:text-white transition"
+              >
+                + Create Project
+              </button>
+            )}
           </div>
         ) : (
           <DndContext
@@ -983,47 +1007,281 @@ export default function AdminProjectListPage() {
           </DndContext>
         )}
 
-        {/* PREVIEW MODAL */}
+        {/* EMBEDDED PROJECT PREVIEW MODAL */}
         <AnimatePresence>
           {previewProject && (
-            <motion.div
-              className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="relative h-[80vh] w-[90vw] max-w-5xl rounded-3xl border border-gray-800 bg-[#050505] overflow-hidden"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.96, opacity: 0 }}
-              >
-                <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
-                  <div>
-                    <p className="text-[11px] text-gray-500 uppercase tracking-[0.16em]">
-                      Preview · Public Page
-                    </p>
-                    <h2 className="text-sm font-semibold text-gray-100">
-                      {previewProject.project_name}
-                    </h2>
-                  </div>
-
-                  <button
-                    onClick={() => setPreviewProject(null)}
-                    className="h-8 w-8 flex items-center justify-center rounded-full border border-gray-700 bg-black/70 text-gray-300 hover:bg-black"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <iframe
-                  src={`/projects/${previewProject.slug}`}
-                  className="h-full w-full bg-black"
-                />
-              </motion.div>
-            </motion.div>
+            <ProjectPreviewModal
+              project={previewProject}
+              onClose={() => setPreviewProject(null)}
+              onEdit={() => {
+                const id = previewProject.id;
+                setPreviewProject(null);
+                router.push(`/admin/projects/edit?id=${id}`);
+              }}
+            />
           )}
         </AnimatePresence>
       </div>
     );
   }
+
+/* =========================================================
+   EMBEDDED PROJECT PREVIEW MODAL (NATIVE ADMIN CANVAS)
+========================================================= */
+function ProjectPreviewModal({
+  project,
+  onClose,
+  onEdit,
+}: {
+  project: Project;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const [fullProject, setFullProject] = useState<any>(project);
+  const [gallery, setGallery] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        // 1. Fetch full project details including description_html
+        const { data: projData } = await supabase
+          .from("projects")
+          .select("*")
+          .eq("id", project.id)
+          .maybeSingle();
+
+        if (projData) {
+          setFullProject(projData);
+        }
+
+        // 2. Fetch gallery images
+        const { data: imgData } = await supabase
+          .from("project_images")
+          .select("*")
+          .eq("project_id", project.id)
+          .order("order_index", { ascending: true });
+
+        if (imgData) {
+          setGallery(imgData);
+        }
+      } catch (err) {
+        console.error("Error loading preview details:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [project.id]);
+
+  const hero = fullProject.hero_image || null;
+  const yearLabel =
+    fullProject.year_start && fullProject.year_end
+      ? `${fullProject.year_start} – ${fullProject.year_end}`
+      : fullProject.year_start || "";
+
+  const location = fullProject.is_confidential_location
+    ? "Confidential"
+    : `${fullProject.city || ""}${
+        fullProject.city && fullProject.country ? ", " : ""
+      }${fullProject.country || ""}`;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-6 pt-16 sm:pt-20"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="relative h-[76vh] max-h-[720px] w-full max-w-4xl rounded-3xl border border-white/15 bg-[#0a0a0a] overflow-hidden flex flex-col shadow-2xl shadow-black font-sans"
+        initial={{ scale: 0.96, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* MODAL HEADER */}
+        <div className="flex items-center justify-between border-b border-white/10 px-5 sm:px-6 py-3 bg-[#111] shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] shrink-0 font-medium ${
+                fullProject.is_published
+                  ? "bg-emerald-900/40 border border-emerald-700 text-emerald-300"
+                  : "bg-orange-900/40 border border-orange-700 text-orange-300"
+              }`}
+            >
+              {fullProject.is_published ? "Published" : "Draft Preview"}
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-white truncate">
+                {fullProject.project_name}
+              </h2>
+              <p className="text-[11px] text-adidaya-text-muted truncate">
+                /projects/{fullProject.slug || fullProject.id}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-white/15 hover:border-white/30 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <Edit2 size={12} />
+              <span className="hidden sm:inline">Edit Project</span>
+            </button>
+
+            {fullProject.is_published && (
+              <button
+                type="button"
+                onClick={() =>
+                  window.open(`/projects/${fullProject.slug}`, "_blank")
+                }
+                className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/15 hover:border-white/30 transition flex items-center gap-1.5 shadow-sm"
+                title="Open live public page"
+              >
+                <ExternalLink size={12} />
+                <span className="hidden sm:inline">Open Live</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-neutral-400 hover:text-white hover:bg-white/15 transition shadow-sm"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* SCROLLABLE EMBEDDED CANVAS */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          {/* HERO SECTION */}
+          <div className="relative min-h-[220px] sm:min-h-[260px] h-[34vh] max-h-[300px] w-full overflow-hidden flex flex-col justify-end bg-neutral-950">
+            {hero ? (
+              <img
+                src={hero}
+                alt={fullProject.project_name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 w-full h-full bg-neutral-900 flex items-center justify-center text-gray-500 text-xs">
+                No cover image uploaded
+              </div>
+            )}
+
+            {/* Vignette gradients */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/60 to-transparent pointer-events-none" />
+
+            {/* Content overlay */}
+            <div className="relative z-10 w-full p-5 sm:p-7 max-w-3xl mx-auto">
+              {/* Category pills */}
+              <div className="flex gap-1.5 mb-2.5 flex-wrap">
+                {fullProject.categories?.map((c: string) => (
+                  <span
+                    key={`cat-${c}`}
+                    className="inline-block bg-adidaya-red px-3 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em] text-white font-medium shadow-sm"
+                  >
+                    {c}
+                  </span>
+                ))}
+                {fullProject.subcategories?.map((s: string) => (
+                  <span
+                    key={`sub-${s}`}
+                    className="inline-block bg-neutral-900 px-3 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em] border border-white/15 text-neutral-300 font-medium"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-snug mb-2">
+                {fullProject.project_name}
+              </h1>
+
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center gap-2.5 text-xs text-neutral-300">
+                {fullProject.status && (
+                  <span className="capitalize">{fullProject.status}</span>
+                )}
+                {fullProject.status && <span>•</span>}
+                {location && <span>{location}</span>}
+                {location && <span>•</span>}
+                {yearLabel && <span>{yearLabel}</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* MAIN CONTENT DETAILS */}
+          <div className="max-w-3xl mx-auto px-5 sm:px-7 py-8 space-y-8">
+            {/* TEAM CREDITS */}
+            {fullProject.team_members && fullProject.team_members.length > 0 && (
+              <section className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                <h3 className="text-[11px] uppercase tracking-[0.16em] text-neutral-400 mb-2.5 font-medium">
+                  Team Credits
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {fullProject.team_members.map((m: any, i: number) => (
+                    <div key={`team-${i}`} className="text-xs text-neutral-300">
+                      <span className="font-semibold text-white">{m.name}</span>{" "}
+                      — <span className="text-neutral-400">{m.role}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* DESCRIPTION */}
+            {fullProject.description_html ? (
+              <section
+                className="prose prose-invert max-w-none text-xs sm:text-sm leading-relaxed prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white"
+                dangerouslySetInnerHTML={{
+                  __html: fullProject.description_html,
+                }}
+              />
+            ) : (
+              <p className="text-xs text-neutral-500 italic">
+                No description written for this project yet.
+              </p>
+            )}
+
+            {/* GALLERY */}
+            {gallery.length > 0 && (
+              <section className="space-y-3 pt-3 border-t border-white/10">
+                <h3 className="text-[11px] uppercase tracking-[0.16em] text-neutral-400 font-medium">
+                  Project Gallery ({gallery.length} images)
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {gallery.map((img) => (
+                    <div
+                      key={img.id}
+                      className="relative rounded-xl overflow-hidden border border-white/10 aspect-[4/3] bg-neutral-900 group"
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={img.caption || ""}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      {img.caption && (
+                        <div className="absolute bottom-0 inset-x-0 bg-black/70 p-2 text-[10px] text-white truncate backdrop-blur-sm">
+                          {img.caption}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}

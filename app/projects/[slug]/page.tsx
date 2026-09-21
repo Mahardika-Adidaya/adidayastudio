@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import ProjectGallery from "@/components/ProjectGallery";
@@ -10,9 +10,11 @@ import ProjectGallery from "@/components/ProjectGallery";
 const slugify = (t: string) =>
   t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-export default function ProjectDetail() {
+function ProjectDetailContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const isPreview = searchParams.get("preview") === "true";
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -42,15 +44,34 @@ export default function ProjectDetail() {
     async function load() {
       setLoading(true);
 
-      const { data: proj, error: projErr } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .single();
+      // Primary query
+      let query = supabase.from("projects").select("*");
+
+      if (slug) {
+        query = query.or(`slug.eq.${slug},id.eq.${slug}`);
+      }
+
+      if (!isPreview) {
+        query = query.eq("is_published", true);
+      }
+
+      let { data: proj, error: projErr } = await query.maybeSingle();
+
+      // If not found with default filter and preview mode is active, try fallback ilike
+      if (!proj && isPreview && slug) {
+        const { data: fallbackProj } = await supabase
+          .from("projects")
+          .select("*")
+          .or(`slug.ilike.${slug},id.eq.${slug}`)
+          .maybeSingle();
+        proj = fallbackProj;
+      }
 
       if (projErr) {
-        console.error(projErr);
+        console.error("Project fetch error:", projErr);
+      }
+
+      if (!proj) {
         setProject(null);
         setLoading(false);
         return;
@@ -73,7 +94,7 @@ export default function ProjectDetail() {
     }
 
     if (slug) load();
-  }, [slug]);
+  }, [slug, isPreview]);
 
   if (loading) {
     return (
@@ -265,5 +286,19 @@ export default function ProjectDetail() {
         </button>
       )}
     </div>
+  );
+}
+
+export default function ProjectDetail() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-gray-400 flex items-center justify-center text-xs">
+          Loading project...
+        </div>
+      }
+    >
+      <ProjectDetailContent />
+    </Suspense>
   );
 }

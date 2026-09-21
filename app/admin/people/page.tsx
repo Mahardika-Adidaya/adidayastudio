@@ -2,7 +2,7 @@
 
 import useUserProfile from "@/hooks/useUserProfile";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, GripVertical, Plus } from "lucide-react";
+import { ArrowLeft, ExternalLink, GripVertical, Plus, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabaseClient";
 import PeopleRow, { Person } from "./PeopleRow";
@@ -498,9 +498,26 @@ const handleSave = async (id: string) => {
 
             {/* TABLE BODY */}
             {loading ? (
-              <div className="p-12 text-center text-xs font-mono text-neutral-500">Loading team members...</div>
+              <div className="p-16 text-center text-xs text-neutral-500">Loading team members...</div>
             ) : people.length === 0 ? (
-              <div className="p-12 text-center text-xs font-mono text-neutral-500">No members found. Click &quot;+ Add Person&quot; to create one.</div>
+              <div className="py-16 px-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-neutral-400 mb-4 shadow-sm">
+                  <Users size={20} strokeWidth={1.5} />
+                </div>
+                <p className="text-base font-semibold text-white">No team members yet</p>
+                <p className="text-xs text-adidaya-text-muted mt-1.5 max-w-sm mx-auto">
+                  Start by adding your first studio member to build your organization directory.
+                </p>
+                {(profile?.role === "admin" || profile?.role === "supervisor") && (
+                  <button
+                    type="button"
+                    onClick={handleAddPerson}
+                    className="mt-5 rounded-full bg-white px-5 py-2 text-xs font-semibold text-black shadow-md hover:bg-adidaya-red hover:text-white transition"
+                  >
+                    + Add Person
+                  </button>
+                )}
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {people.map((person, index) => (

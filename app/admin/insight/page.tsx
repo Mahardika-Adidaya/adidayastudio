@@ -15,6 +15,8 @@ import {
   ArrowUpDown,
   Check,
   X,
+  BookOpen,
+  Edit2,
 } from "lucide-react";
 
 /* ============================================================
@@ -115,6 +117,7 @@ export default function AdminInsightListPage() {
     "az" | "created" | "updated" | "published_first" | "draft_first"
   >("created");
 
+  const [previewInsight, setPreviewInsight] = useState<Insight | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -758,13 +761,44 @@ export default function AdminInsightListPage() {
       {/* LIST */}
       <div className="space-y-4">
         {loading ? (
-          <p className="text-neutral-600 text-center py-10">Loading…</p>
+          <p className="text-neutral-500 text-xs text-center py-12">Loading insights…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-3xl bg-[#0a0a0a] border border-neutral-800 text-center py-16">
-            <p className="text-lg font-semibold">No insights found</p>
-            <p className="text-gray-500 mt-2">
-              Try adjusting your filters or search query.
+          <div className="rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center py-16 px-6">
+            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-neutral-400 mb-4 shadow-sm">
+              <BookOpen size={20} strokeWidth={1.5} />
+            </div>
+            <p className="text-base sm:text-lg font-semibold text-white">
+              {search || categoryFilter !== "all" || authorFilter !== "all" || statusFilter !== "all"
+                ? "No insights found"
+                : "No insights yet"}
             </p>
+            <p className="text-xs sm:text-sm text-adidaya-text-muted mt-1.5 max-w-sm mx-auto">
+              {search || categoryFilter !== "all" || authorFilter !== "all" || statusFilter !== "all"
+                ? "Try adjusting your search query or filter criteria."
+                : "Start by writing and publishing your first architectural insight."}
+            </p>
+            {search || categoryFilter !== "all" || authorFilter !== "all" || statusFilter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("all");
+                  setAuthorFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="mt-5 rounded-full border border-white/15 bg-white/5 px-5 py-2 text-xs font-medium text-white hover:bg-white/10 hover:border-white/30 transition shadow-sm"
+              >
+                Reset Filters
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push("/admin/insight/create")}
+                className="mt-5 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-black shadow-md hover:bg-adidaya-red hover:text-white transition"
+              >
+                + Create Insight
+              </button>
+            )}
           </div>
         ) : (
           filtered.map((i) => {
@@ -919,10 +953,11 @@ export default function AdminInsightListPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-3 pt-2">
-                            {/* Preview */}
+                            {/* Preview: native admin embedded canvas */}
                             <button
-                              onClick={() => window.open(`/insights/${i.slug}`, "_blank")}
-                              className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-900 text-sm hover:border-neutral-500 text-white"
+                              type="button"
+                              onClick={() => setPreviewInsight(i)}
+                              className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-900 text-sm hover:border-neutral-500 text-white cursor-pointer transition shadow-sm"
                             >
                               Preview
                             </button>
@@ -1004,6 +1039,252 @@ export default function AdminInsightListPage() {
           })
         )}
       </div>
+
+      {/* EMBEDDED INSIGHT PREVIEW MODAL */}
+      <AnimatePresence>
+        {previewInsight && (
+          <InsightPreviewModal
+            insight={previewInsight}
+            onClose={() => setPreviewInsight(null)}
+            onEdit={() => {
+              const id = previewInsight.id;
+              setPreviewInsight(null);
+              router.push(`/admin/insight/edit?id=${id}`);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+/* =========================================================
+   EMBEDDED INSIGHT PREVIEW MODAL (NATIVE ADMIN CANVAS)
+========================================================= */
+function InsightPreviewModal({
+  insight,
+  onClose,
+  onEdit,
+}: {
+  insight: Insight;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const [fullInsight, setFullInsight] = useState<Insight>(insight);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      if (!insight.id) return;
+      try {
+        const { data } = await supabase
+          .from("insight")
+          .select("*")
+          .eq("id", insight.id)
+          .maybeSingle();
+
+        if (data) {
+          setFullInsight(data as Insight);
+        }
+      } catch (err) {
+        console.error("Error loading preview details:", err);
+      }
+    }
+
+    loadData();
+  }, [insight.id]);
+
+  const hero = fullInsight.hero_image_url || null;
+  const isPublished = fullInsight.status === "published";
+  const authorName = fullInsight.authors?.[0]?.name || "Adidaya Studio";
+  const formattedDate = formatDateLabel(
+    fullInsight.published_at || fullInsight.created_at
+  );
+  const readingTime = fullInsight.reading_time || 0;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-6 pt-16 sm:pt-20 font-sans"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="relative h-[76vh] max-h-[720px] w-full max-w-4xl rounded-3xl border border-white/15 bg-[#0a0a0a] overflow-hidden flex flex-col shadow-2xl shadow-black font-sans"
+        initial={{ scale: 0.96, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* MODAL HEADER */}
+        <div className="flex items-center justify-between border-b border-white/10 px-5 sm:px-6 py-3 bg-[#111] shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] shrink-0 font-medium ${
+                isPublished
+                  ? "bg-emerald-900/40 border border-emerald-700 text-emerald-300"
+                  : "bg-orange-900/40 border border-orange-700 text-orange-300"
+              }`}
+            >
+              {isPublished ? "Published" : "Draft Preview"}
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-white truncate">
+                {fullInsight.title}
+              </h2>
+              <p className="text-[11px] text-adidaya-text-muted truncate">
+                /insights/{fullInsight.slug || fullInsight.id}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-white/15 hover:border-white/30 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <Edit2 size={12} />
+              <span className="hidden sm:inline">Edit Insight</span>
+            </button>
+
+            {isPublished && (
+              <button
+                type="button"
+                onClick={() =>
+                  window.open(`/insights/${fullInsight.slug}`, "_blank")
+                }
+                className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-neutral-300 hover:text-white hover:bg-white/15 hover:border-white/30 transition flex items-center gap-1.5 shadow-sm"
+                title="Open live public page"
+              >
+                <ExternalLink size={12} />
+                <span className="hidden sm:inline">Open Live</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-neutral-400 hover:text-white hover:bg-white/15 transition shadow-sm"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* SCROLLABLE EMBEDDED CANVAS */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          {/* HERO SECTION */}
+          <div className="relative min-h-[220px] sm:min-h-[260px] h-[34vh] max-h-[300px] w-full overflow-hidden flex flex-col justify-end bg-neutral-950">
+            {hero ? (
+              <img
+                src={hero}
+                alt={fullInsight.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 w-full h-full bg-neutral-900 flex items-center justify-center text-gray-500 text-xs">
+                No hero image uploaded
+              </div>
+            )}
+
+            {/* Vignette gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/60 to-transparent pointer-events-none" />
+
+            {/* Content overlay */}
+            <div className="relative z-10 w-full p-5 sm:p-7 max-w-3xl mx-auto">
+              {/* Category pill */}
+              {fullInsight.category && (
+                <div className="mb-2.5">
+                  <span className="inline-block bg-adidaya-red px-3 py-0.5 rounded-full text-[10px] uppercase tracking-[0.16em] text-white font-semibold shadow-sm">
+                    {fullInsight.category}
+                  </span>
+                </div>
+              )}
+
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-snug mb-2">
+                {fullInsight.title}
+              </h1>
+
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-300">
+                <span>{authorName}</span>
+                <span>•</span>
+                <span>{formattedDate}</span>
+                {readingTime > 0 && (
+                  <>
+                    <span>•</span>
+                    <span>{readingTime} min read</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* MAIN ARTICLE BODY & DETAILS */}
+          <div className="max-w-3xl mx-auto px-5 sm:px-7 py-8 space-y-8">
+            {/* SUBTITLE */}
+            {fullInsight.subtitle && (
+              <p className="text-sm sm:text-base text-gray-300 font-medium leading-relaxed italic border-l-2 border-adidaya-red pl-4 py-0.5">
+                {fullInsight.subtitle}
+              </p>
+            )}
+
+            {/* AUTHORS BREAKDOWN */}
+            {fullInsight.authors && fullInsight.authors.length > 0 && (
+              <section className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                <h3 className="text-[11px] uppercase tracking-[0.16em] text-neutral-400 mb-2.5 font-medium">
+                  Authors & Contributors
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {fullInsight.authors.map((a, i) => (
+                    <div key={`auth-${i}`} className="text-xs text-neutral-300">
+                      <span className="font-semibold text-white">{a.name}</span>{" "}
+                      — <span className="text-neutral-400">{a.role}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* BODY HTML CONTENT */}
+            {fullInsight.body_html ? (
+              <section
+                className="prose prose-invert max-w-none text-xs sm:text-sm leading-relaxed prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white prose-img:rounded-xl prose-img:border prose-img:border-white/10"
+                dangerouslySetInnerHTML={{
+                  __html: fullInsight.body_html,
+                }}
+              />
+            ) : (
+              <p className="text-xs text-neutral-500 italic">
+                No body content written for this insight yet.
+              </p>
+            )}
+
+            {/* TAGS */}
+            {fullInsight.tags && fullInsight.tags.length > 0 && (
+              <section className="space-y-3 pt-4 border-t border-white/10">
+                <h3 className="text-[11px] uppercase tracking-[0.16em] text-neutral-400 font-medium">
+                  Tags ({fullInsight.tags.length})
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {fullInsight.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="px-3.5 py-1 bg-neutral-900 text-gray-300 rounded-full text-[11px] uppercase tracking-[0.14em] border border-white/10"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -259,7 +259,7 @@ export default function CreateCareerForm() {
      RENDER
   ============================ */
   return (
-    <div className="min-h-screen bg-black pb-12 pt-6 text-gray-100">
+    <div className="min-h-screen bg-black pb-48 md:pb-56 pt-6 text-gray-100 font-sans">
       <div className="mx-auto flex w-full max-w-5xl flex-col px-4">
       <h1 className="mb-2 text-3xl font-semibold text-white">
               <span className="mr-2 text-adidaya-red">*</span>
@@ -434,7 +434,7 @@ export default function CreateCareerForm() {
               />
 
               {openSkillList && (
-                <div className="absolute mt-2 w-full bg-[#111] border border-gray-800 rounded-2xl max-h-48 overflow-y-auto shadow-xl">
+                <div className="absolute left-0 right-0 top-full mt-2 w-full bg-[#121212]/95 backdrop-blur-xl border border-white/15 rounded-2xl max-h-48 overflow-y-auto shadow-2xl shadow-black/80 z-50 p-1.5 space-y-0.5">
                   {defaultSkills
                     .filter((s) =>
                       s.toLowerCase().includes(skillInput.toLowerCase())
@@ -449,7 +449,7 @@ export default function CreateCareerForm() {
                           setSkillInput("");
                           setOpenSkillList(false);
                         }}
-                        className="px-4 py-2 cursor-pointer hover:bg-gray-700"
+                        className="px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl cursor-pointer text-gray-300 hover:text-white hover:bg-white/[0.08] transition-colors"
                       >
                         {skill}
                       </div>
@@ -464,7 +464,7 @@ export default function CreateCareerForm() {
                           setSkillInput("");
                           setOpenSkillList(false);
                         }}
-                        className="px-4 py-2 cursor-pointer text-adidaya-red hover:bg-gray-700"
+                        className="px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl cursor-pointer text-adidaya-red hover:text-white hover:bg-adidaya-red/20 transition-colors"
                       >
                         Add "{skillInput}"
                       </div>
@@ -579,26 +579,33 @@ export default function CreateCareerForm() {
             </SortableContext>
           </DndContext>
         </div>
-
-        {/* SUBMIT */}
-        <div className="flex gap-4">
-          <button
-            onClick={handleSubmit}
-            className="bg-adidaya-red px-8 py-3 rounded-full text-white font-bold hover:bg-white hover:text-adidaya-red"
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save Draft"}
-          </button>
-
-          <button
-            onClick={() => router.push("/admin/career")}
-            className="px-8 py-3 rounded-full border border-gray-600 hover:bg-gray-800 transition"
-          >
-            Cancel
-          </button>
-        </div>
-
         {message && <p className="mt-4 text-sm">{message}</p>}
+      </div>
+
+      {/* BOTTOM ACTION BAR (MATCHING FOOTER HEIGHT) */}
+      <div className="fixed inset-x-0 bottom-0 bg-[#050509]/95 border-t border-white/10 backdrop-blur-xl z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] py-6 md:py-8 px-4 sm:px-6">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+          <div className="text-xs sm:text-sm text-neutral-400 font-medium">
+            Save as draft to continue later.
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => router.push("/admin/career")}
+              className="rounded-full border border-white/15 bg-white/5 px-6 py-2.5 text-xs font-medium text-neutral-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="rounded-full border border-adidaya-red bg-adidaya-red px-7 py-2.5 text-xs font-semibold text-white shadow-lg shadow-red-900/40 transition hover:bg-red-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {loading ? "Saving..." : isEdit ? "Save Changes" : "Save Draft"}
+            </button>
+          </div>
+        </div>
       </div>
       </div>
     </div>

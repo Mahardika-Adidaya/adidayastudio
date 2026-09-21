@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { format } from "date-fns";
@@ -31,9 +31,11 @@ type Insight = {
   reading_time: number | null;
 };
 
-export default function InsightDetail() {
+function InsightDetailContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const isPreview = searchParams.get("preview") === "true";
 
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,19 +66,33 @@ export default function InsightDetail() {
     async function load() {
       setLoading(true);
 
-      const { data } = await supabase
-        .from("insight")
-        .select("*")
-        .eq("slug", slug)
-        .eq("status", "published")
-        .single();
+      let query = supabase.from("insight").select("*");
+
+      if (slug) {
+        query = query.or(`slug.eq.${slug},id.eq.${slug}`);
+      }
+
+      if (!isPreview) {
+        query = query.eq("status", "published");
+      }
+
+      let { data } = await query.maybeSingle();
+
+      if (!data && isPreview && slug) {
+        const { data: fallbackData } = await supabase
+          .from("insight")
+          .select("*")
+          .or(`slug.ilike.${slug},id.eq.${slug}`)
+          .maybeSingle();
+        data = fallbackData;
+      }
 
       setInsight(data);
       setLoading(false);
     }
 
     if (slug) load();
-  }, [slug]);
+  }, [slug, isPreview]);
 
   if (loading) {
     return (
@@ -210,7 +226,7 @@ export default function InsightDetail() {
             className="w-5 h-5 text-white"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth="2"
+            strokeWidth={2}
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -218,5 +234,19 @@ export default function InsightDetail() {
         </button>
       )}
     </div>
+  );
+}
+
+export default function InsightDetail() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-white flex items-center justify-center text-xs">
+          <p className="text-gray-500">Loading insight...</p>
+        </div>
+      }
+    >
+      <InsightDetailContent />
+    </Suspense>
   );
 }
