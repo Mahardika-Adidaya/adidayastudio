@@ -444,73 +444,74 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           {data.type === "career" ? (
             /* DEDICATED CAREER PREVIEW CARD (ALL FIELDS) */
             <div
-              className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0 p-3.5 pt-8"
+              className="w-[270px] sm:w-[285px] aspect-[9/16] bg-[#09090b] rounded-[24px] border border-white/20 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none shrink-0 p-3.5 pt-10"
               style={{
                 background:
-                  "radial-gradient(circle at 85% 15%, rgba(229, 57, 53, 0.22) 0%, rgba(229, 57, 53, 0.04) 40%, transparent 65%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
+                  "radial-gradient(circle at 85% 20%, rgba(229, 57, 53, 0.24) 0%, rgba(229, 57, 53, 0.04) 42%, transparent 68%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
               }}
             >
-              {/* TOP: WE'RE HIRING & TITLE */}
-              <div className="space-y-1.5">
-                {/* We're hiring badge (left aligned, no caps lock) */}
-                <div className="flex items-center">
-                  <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[7.5px] font-bold text-white shadow-md shadow-red-900/30">
-                    We're hiring
-                  </span>
+              {/* TOP CONTENT GROUP (TITLE, SPECS CARD, DESCRIPTION) WITH TIGHT SPACING */}
+              <div className="space-y-2">
+                {/* We're hiring & Title */}
+                <div className="space-y-1">
+                  <div className="flex items-center">
+                    <span className="px-2 py-0.5 rounded-full bg-adidaya-red text-[7.5px] font-bold text-white shadow-md shadow-red-900/30">
+                      We're hiring
+                    </span>
+                  </div>
+
+                  <div className="flex items-start gap-1 pt-0.5">
+                    <span className="text-adidaya-red font-bold text-sm leading-tight">*</span>
+                    <h3 className="text-sm sm:text-[15px] font-extrabold text-white leading-tight tracking-tight">
+                      {data.title}
+                    </h3>
+                  </div>
                 </div>
 
-                {/* POSITION TITLE */}
-                <div className="flex items-start gap-1 pt-0.5">
-                  <span className="text-adidaya-red font-bold text-sm leading-tight">*</span>
-                  <h3 className="text-sm sm:text-[15px] font-extrabold text-white leading-tight tracking-tight">
-                    {data.title}
-                  </h3>
+                {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-[7.5px]">
+                  <div>
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">TYPE</span>
+                    <span className="font-semibold text-neutral-100 block truncate">{data.jobType || "Full time"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DEADLINE</span>
+                    <span className="font-semibold text-adidaya-red block truncate">{data.deadline || "Open"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EDUCATION</span>
+                    <span className="font-semibold text-neutral-100 block truncate">{data.education || "S-1 — Architecture"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EXPERIENCE</span>
+                    <span className="font-semibold text-neutral-100 block truncate">{data.experience || "0–1 year"}</span>
+                  </div>
+                  <div className="col-span-2 pt-0.5">
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">SKILL</span>
+                    <span className="font-semibold text-neutral-100 block leading-tight">
+                      {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
+                    </span>
+                  </div>
                 </div>
+
+                {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS - NO CARD WRAPPER) */}
+                {careerDescriptions.length > 0 && (
+                  <div className="space-y-0.5 px-0.5">
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DESCRIPTION</span>
+                    <ul className="space-y-0.5 text-[7px] text-neutral-300 leading-tight">
+                      {careerDescriptions.map((item, i) => (
+                        <li key={i} className="flex items-start gap-1">
+                          <span className="text-adidaya-red font-bold leading-none shrink-0">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-
-              {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-[7.5px]">
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">TYPE</span>
-                  <span className="font-semibold text-neutral-100 block truncate">{data.jobType || "Full time"}</span>
-                </div>
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DEADLINE</span>
-                  <span className="font-semibold text-adidaya-red block truncate">{data.deadline || "Open"}</span>
-                </div>
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EDUCATION</span>
-                  <span className="font-semibold text-neutral-100 block truncate">{data.education || "S-1 — Architecture"}</span>
-                </div>
-                <div>
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EXPERIENCE</span>
-                  <span className="font-semibold text-neutral-100 block truncate">{data.experience || "0–1 year"}</span>
-                </div>
-                <div className="col-span-2 pt-0.5">
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">SKILL</span>
-                  <span className="font-semibold text-neutral-100 block leading-tight">
-                    {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
-                  </span>
-                </div>
-              </div>
-
-              {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS) */}
-              {careerDescriptions.length > 0 && (
-                <div className="space-y-0.5 my-0.5">
-                  <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DESCRIPTION</span>
-                  <ul className="space-y-0.5 text-[7px] text-neutral-300 leading-tight">
-                    {careerDescriptions.map((item, i) => (
-                      <li key={i} className="flex items-start gap-1">
-                        <span className="text-adidaya-red font-bold leading-none shrink-0">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
 
               {/* BOTTOM SECTION: Send CV (Left) + QR Code (Right) -> Bottom Logo */}
-              <div className="space-y-1.5 pt-0.5">
+              <div className="space-y-1.5 pt-1 mt-auto">
                 {/* Row: Left (Submission Info), Right (QR Code) */}
                 <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/10">
                   <div className="flex-1 min-w-0 text-[6.5px] text-neutral-300 space-y-0.5 text-left">
@@ -724,108 +725,109 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               height: 1920,
               backgroundColor: "#09090b",
               color: "#ffffff",
-              padding: "240px 75px 65px 75px",
+              padding: "300px 75px 65px 75px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               fontFamily: "Inter, system-ui, -apple-system, sans-serif",
               boxSizing: "border-box",
               backgroundImage:
-                "radial-gradient(circle at 85% 15%, rgba(229, 57, 53, 0.25) 0%, rgba(229, 57, 53, 0.05) 42%, transparent 68%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
+                "radial-gradient(circle at 85% 20%, rgba(229, 57, 53, 0.26) 0%, rgba(229, 57, 53, 0.05) 42%, transparent 68%), linear-gradient(180deg, #181215 0%, #100f12 35%, #09090b 100%)",
             }}
           >
-            {/* TOP: WE'RE HIRING & TITLE */}
-            <div>
-              {/* We're hiring badge (left aligned, no caps lock, ~250px from top) */}
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignSelf: "flex-start",
-                  backgroundColor: "#E53935",
-                  color: "#FFFFFF",
-                  padding: "10px 24px",
-                  borderRadius: 9999,
-                  fontSize: 20,
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                  boxShadow: "0 6px 20px rgba(229, 57, 53, 0.35)",
-                  marginBottom: 16,
-                }}
-              >
-                We're hiring
-              </div>
-
-              {/* POSITION TITLE */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <span style={{ color: "#E53935", fontSize: 56, fontWeight: 800, lineHeight: 1 }}>*</span>
-                <h1
+            {/* TOP GROUP: TITLE, SPECS CARD, DESCRIPTION (COHESIVE SPACING) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* We're hiring & Title */}
+              <div>
+                <div
                   style={{
-                    fontSize: 54,
-                    fontWeight: 800,
-                    lineHeight: 1.15,
-                    letterSpacing: "-0.02em",
+                    display: "inline-flex",
+                    alignSelf: "flex-start",
+                    backgroundColor: "#E53935",
                     color: "#FFFFFF",
-                    margin: 0,
+                    padding: "10px 24px",
+                    borderRadius: 9999,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    letterSpacing: "0.02em",
+                    boxShadow: "0 6px 20px rgba(229, 57, 53, 0.35)",
+                    marginBottom: 16,
                   }}
                 >
-                  {data.title}
-                </h1>
-              </div>
-            </div>
+                  We're hiring
+                </div>
 
-            {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "24px 36px",
-                backgroundColor: "rgba(255, 255, 255, 0.04)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                borderRadius: 24,
-                padding: "32px 36px",
-              }}
-            >
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>TYPE</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.jobType || "Full time"}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
-                <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
-              </div>
-              <div style={{ gridColumn: "span 2", paddingTop: 4 }}>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
-                <span style={{ fontSize: 23, fontWeight: 700, color: "#F4F4F5", lineHeight: 1.4 }}>
-                  {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
-                </span>
-              </div>
-            </div>
-
-            {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS) */}
-            {careerDescriptions.length > 0 && (
-              <div style={{ margin: "16px 0" }}>
-                <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 12 }}>DESCRIPTION</span>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {careerDescriptions.map((item, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 19, color: "#D4D4D8", lineHeight: 1.45 }}>
-                      <span style={{ color: "#E53935", fontWeight: 700 }}>•</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <span style={{ color: "#E53935", fontSize: 56, fontWeight: 800, lineHeight: 1 }}>*</span>
+                  <h1
+                    style={{
+                      fontSize: 54,
+                      fontWeight: 800,
+                      lineHeight: 1.15,
+                      letterSpacing: "-0.02em",
+                      color: "#FFFFFF",
+                      margin: 0,
+                    }}
+                  >
+                    {data.title}
+                  </h1>
                 </div>
               </div>
-            )}
+
+              {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "24px 36px",
+                  backgroundColor: "rgba(255, 255, 255, 0.04)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  borderRadius: 24,
+                  padding: "32px 36px",
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>TYPE</span>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.jobType || "Full time"}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
+                </div>
+                <div style={{ gridColumn: "span 2", paddingTop: 4 }}>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
+                  <span style={{ fontSize: 23, fontWeight: 700, color: "#F4F4F5", lineHeight: 1.4 }}>
+                    {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
+                  </span>
+                </div>
+              </div>
+
+              {/* DESCRIPTION BULLETS (ALL DESCRIPTIONS - NO CARD WRAPPER) */}
+              {careerDescriptions.length > 0 && (
+                <div style={{ padding: "0 4px" }}>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 12 }}>DESCRIPTION</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {careerDescriptions.map((item, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 19, color: "#D4D4D8", lineHeight: 1.45 }}>
+                        <span style={{ color: "#E53935", fontWeight: 700 }}>•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* BOTTOM SECTION: Left (Submission info), Right (QR Code) -> Bottom (Logo) */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 10, marginTop: "auto" }}>
               {/* Row: Left (Submission Info), Right (QR Code) */}
               <div
                 style={{
