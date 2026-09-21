@@ -337,19 +337,53 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
       const dataUrl = await generateStoryDataUrl();
       if (!dataUrl) throw new Error("Failed to render story canvas");
 
-      const link = document.createElement("a");
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
       const cleanFileName = (data.title || "adidaya-story")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .slice(0, 40);
-      link.download = `adidaya-story-${cleanFileName}.jpg`;
-      link.href = dataUrl;
+      const fileName = `adidaya-story-${cleanFileName}.jpg`;
+      const file = new File([blob], fileName, { type: "image/jpeg" });
+
+      const isMobile =
+        typeof navigator !== "undefined" &&
+        (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2));
+
+      // On mobile devices, opening the native share sheet allows direct 1-tap "Save Image" to Photos / Gallery
+      if (
+        isMobile &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        toast.dismiss(toastId);
+        await navigator.share({
+          files: [file],
+          title: data.title,
+        });
+        toast.success("Ketuk 'Simpan Gambar' / 'Save Image' untuk simpan ke Galeri!");
+        return;
+      }
+
+      // Standard desktop or mobile fallback download
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = blobUrl;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
 
       toast.success("Instagram Story downloaded! (1080x1920)", { id: toastId });
     } catch (err: any) {
-      console.error("Export Story Error:", err);
-      toast.error("Failed to generate Story image. Please try again.", { id: toastId });
+      if (err?.name !== "AbortError") {
+        console.error("Export Story Error:", err);
+        toast.error("Failed to generate Story image. Please try again.", { id: toastId });
+      } else {
+        toast.dismiss(toastId);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -367,7 +401,11 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const file = new File([blob], `adidaya-${data.type}-story.jpg`, {
+      const cleanFileName = (data.title || "adidaya-story")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .slice(0, 40);
+      const file = new File([blob], `adidaya-${data.type}-${cleanFileName}.jpg`, {
         type: "image/jpeg",
       });
 
@@ -383,10 +421,14 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
         });
         toast.dismiss(toastId);
       } else {
+        const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.download = `adidaya-${data.type}-story.jpg`;
-        link.href = dataUrl;
+        link.download = `adidaya-${data.type}-${cleanFileName}.jpg`;
+        link.href = blobUrl;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
         toast.success("Image saved to your device!", { id: toastId });
       }
     } catch (err: any) {
@@ -926,7 +968,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                   <img
                     src={activeImage}
                     alt={data.title}
-                    crossOrigin="anonymous"
+                    crossOrigin={activeImage.startsWith("data:") ? undefined : "anonymous"}
                     style={{
                       width: "100%",
                       height: "100%",

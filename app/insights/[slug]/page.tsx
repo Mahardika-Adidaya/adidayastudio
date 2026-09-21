@@ -265,8 +265,11 @@ function InsightDetailContent() {
             tags: insight.tags || [],
             author: authorName,
             date: formattedDate,
-            readingTime: readingTime,
-            imageUrl: insight.hero_image_url,
+            imageUrl:
+              insight.hero_image_url ||
+              (insight as any).cover_image_url ||
+              (insight as any).image_url ||
+              null,
             excerpt: insight.body_html || insight.subtitle,
             url: typeof window !== "undefined" ? window.location.href : undefined,
           }}

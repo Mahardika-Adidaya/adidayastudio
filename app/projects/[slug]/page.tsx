@@ -124,7 +124,11 @@ function ProjectDetailContent() {
   /* ============================
       COMPUTED FIELDS
   ============================ */
-  const hero = project.hero_image || null;
+  const hero =
+    project.hero_image ||
+    project.gallery?.[0]?.image_url ||
+    (project.gallery?.[0] as any)?.url ||
+    null;
 
   const yearLabel =
     project.year_start && project.year_end
