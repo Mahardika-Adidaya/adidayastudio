@@ -24,7 +24,9 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  Share2,
 } from "lucide-react";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
 
 type StatusFilter = "all" | "draft" | "published";
 type SortOption = "newest_deadline" | "oldest_deadline" | "created_at";
@@ -53,6 +55,7 @@ export default function AdminCareerList() {
   // Modal / Action states
   const [publishTarget, setPublishTarget] = useState<any | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [shareJob, setShareJob] = useState<any | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Focus search input on open
@@ -762,6 +765,16 @@ export default function AdminCareerList() {
 
                         {/* ACTIONS FOOTER */}
                         <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
+                          {/* Share & Story */}
+                          <button
+                            type="button"
+                            onClick={() => setShareJob(job)}
+                            className="rounded-full border border-neutral-700 bg-neutral-900 px-4 py-2 text-xs font-medium text-white hover:border-adidaya-red hover:text-adidaya-red transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                          >
+                            <Share2 size={13} strokeWidth={1.75} />
+                            <span>Share</span>
+                          </button>
+
                           {/* Edit */}
                           <button
                             type="button"
@@ -942,6 +955,31 @@ export default function AdminCareerList() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* SHARE MODAL */}
+      {shareJob && (
+        <ShareModal
+          isOpen={Boolean(shareJob)}
+          onClose={() => setShareJob(null)}
+          data={{
+            type: "career",
+            title: shareJob.title,
+            category: shareJob.division || "Career",
+            meta: [
+              shareJob.type,
+              shareJob.division,
+              shareJob.education,
+              shareJob.experience?.split("\n")[0] || "",
+              shareJob.deadline ? `Deadline: ${shareJob.deadline}` : "",
+            ].filter(Boolean),
+            excerpt:
+              Array.isArray(shareJob.description)
+                ? shareJob.description.join(". ")
+                : String(shareJob.description || ""),
+            url: typeof window !== "undefined" ? `${window.location.origin}/networks#career` : undefined,
+          }}
+        />
+      )}
     </div>
   );
 }

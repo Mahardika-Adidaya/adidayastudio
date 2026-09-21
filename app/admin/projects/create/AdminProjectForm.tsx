@@ -145,7 +145,11 @@ export default function AdminProjectForm({
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [heroPath, setHeroPath] = useState("");
 
-  // Optional fields
+  // Optional fields & Specifications
+  const [siteArea, setSiteArea] = useState("");
+  const [buildingArea, setBuildingArea] = useState("");
+  const [buildingFloors, setBuildingFloors] = useState("");
+
   const [teamMembers, setTeamMembers] = useState<{ name: string; role: string }[]>([]);
   const [gallery, setGallery] = useState<
     { id: string, url: string; path: string; caption: string; orientation?: string }[]
@@ -418,12 +422,16 @@ const handleSaveDraft = async () => {
           is_confidential_location: isConfidentialLocation,
           categories,
           subcategories,
+          site_area: siteArea.trim() || null,
+          building_area: buildingArea.trim() || null,
+          building_floors: buildingFloors.trim() || null,
           team_members: teamMembers,
           description_html: descriptionHtml || null,
           order_index: parseInt(orderIndex || "0"),
           is_featured: isFeatured,
         })
         .eq("id", projectId)
+        .select()
         .single();
 
       error = response.error;
@@ -446,6 +454,9 @@ const handleSaveDraft = async () => {
           is_confidential_location: isConfidentialLocation,
           categories,
           subcategories,
+          site_area: siteArea.trim() || null,
+          building_area: buildingArea.trim() || null,
+          building_floors: buildingFloors.trim() || null,
           team_members: teamMembers,
           description_html: descriptionHtml || null,
           order_index: parseInt(orderIndex || "0"),
@@ -466,22 +477,22 @@ const handleSaveDraft = async () => {
 
         toast.success("Gallery linked!");
       }
-
-
     }
 
     if (error) {
-      console.error(error);
-      toast.error("Failed to save project");
-      setGlobalError("Failed to save project.");
+      console.error("Save project error details:", error);
+      const errMsg = error.message || error.details || "Failed to save project";
+      toast.error(errMsg);
+      setGlobalError(errMsg);
     } else {
       toast.success(isEdit ? "Project updated!" : "Draft saved!");
       router.push("/admin/projects");
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Unexpected error");
-    setGlobalError("Unexpected error.");
+  } catch (err: any) {
+    console.error("Save project unexpected error:", err);
+    const errMsg = err?.message || "Unexpected error occurred while saving.";
+    toast.error(errMsg);
+    setGlobalError(errMsg);
   } finally {
     setSaving(false);
   }
@@ -516,6 +527,10 @@ const handleSaveDraft = async () => {
 
     setCategories(initialProject.categories ?? []);
     setSubcategories(initialProject.subcategories ?? []);
+
+    setSiteArea(initialProject.site_area ?? "");
+    setBuildingArea(initialProject.building_area ?? "");
+    setBuildingFloors(initialProject.building_floors ?? initialProject.floors_count ?? "");
 
     setOrderIndex(
       initialProject.order_index != null
@@ -818,6 +833,68 @@ loadGallery();
                     {fieldErrors.subcategories}
                   </p>
                 )}
+              </div>
+
+              {/* SPECIFICATIONS (SITE AREA, BUILDING AREA, BUILDING / FLOORS) - OPTIONAL */}
+              <div className="mt-8 pt-6 border-t border-neutral-800/80">
+                <div className="mb-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-neutral-400 font-semibold">
+                    Project Specifications <span className="text-neutral-600 text-[10px] normal-case tracking-normal">(Optional)</span>
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* SITE AREA */}
+                  <div>
+                    <label className="mb-1.5 block text-xs uppercase tracking-[0.16em] text-gray-500">
+                      Site Area
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        value={siteArea}
+                        onChange={(e) => setSiteArea(e.target.value)}
+                        className="w-full rounded-full border border-gray-700 bg-[#111] pl-4 pr-12 py-3 text-xs sm:text-sm text-gray-100 focus:border-adidaya-red outline-none"
+                      />
+                      <span className="absolute right-4 text-xs font-medium text-neutral-400 select-none pointer-events-none">
+                        m²
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* BUILDING AREA */}
+                  <div>
+                    <label className="mb-1.5 block text-xs uppercase tracking-[0.16em] text-gray-500">
+                      Building Area
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        value={buildingArea}
+                        onChange={(e) => setBuildingArea(e.target.value)}
+                        className="w-full rounded-full border border-gray-700 bg-[#111] pl-4 pr-12 py-3 text-xs sm:text-sm text-gray-100 focus:border-adidaya-red outline-none"
+                      />
+                      <span className="absolute right-4 text-xs font-medium text-neutral-400 select-none pointer-events-none">
+                        m²
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* FLOORS */}
+                  <div>
+                    <label className="mb-1.5 block text-xs uppercase tracking-[0.16em] text-gray-500">
+                      Floors
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        value={buildingFloors}
+                        onChange={(e) => setBuildingFloors(e.target.value)}
+                        className="w-full rounded-full border border-gray-700 bg-[#111] pl-4 pr-16 py-3 text-xs sm:text-sm text-gray-100 focus:border-adidaya-red outline-none"
+                      />
+                      <span className="absolute right-4 text-xs font-medium text-neutral-400 select-none pointer-events-none">
+                        Floors
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* ORDER & FEATURED */}

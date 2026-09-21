@@ -6,6 +6,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { format } from "date-fns";
 import { id as localeID } from "date-fns/locale";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
+import { Share2 } from "lucide-react";
 
 // ----------------------
 // SLUGIFY HELPER
@@ -41,6 +43,7 @@ function InsightDetailContent() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // -----------------------------------
   // SCROLL HANDLER (progress + back to top)
@@ -68,8 +71,12 @@ function InsightDetailContent() {
 
       let query = supabase.from("insight").select("*");
 
-      if (slug) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+      if (isUuid) {
         query = query.or(`slug.eq.${slug},id.eq.${slug}`);
+      } else {
+        query = query.eq("slug", slug);
       }
 
       if (!isPreview) {
@@ -79,11 +86,13 @@ function InsightDetailContent() {
       let { data } = await query.maybeSingle();
 
       if (!data && isPreview && slug) {
-        const { data: fallbackData } = await supabase
-          .from("insight")
-          .select("*")
-          .or(`slug.ilike.${slug},id.eq.${slug}`)
-          .maybeSingle();
+        let fallbackQuery = supabase.from("insight").select("*");
+        if (isUuid) {
+          fallbackQuery = fallbackQuery.or(`slug.ilike.${slug},id.eq.${slug}`);
+        } else {
+          fallbackQuery = fallbackQuery.ilike("slug", slug);
+        }
+        const { data: fallbackData } = await fallbackQuery.maybeSingle();
         data = fallbackData;
       }
 
@@ -148,14 +157,23 @@ function InsightDetailContent() {
           <div className="relative z-10 w-full pt-28 pb-12 sm:pb-14">
             <div className="max-w-4xl mx-auto px-6">
               
-              {/* CATEGORY (CLICKABLE) */}
-              <div className="mb-3">
+              {/* CATEGORY & SHARE (CLICKABLE) */}
+              <div className="mb-3 flex items-center justify-between gap-2 flex-wrap">
                 <Link
                   href={`/insights/category/${slugify(insight.category)}`}
                   className="inline-flex items-center rounded-full bg-adidaya-red px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-adidaya-red/80 transition"
                 >
                   {insight.category}
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-xs text-white transition-all backdrop-blur-md cursor-pointer select-none shadow-sm hover:scale-105 active:scale-95"
+                >
+                  <Share2 size={13} strokeWidth={1.75} />
+                  <span>Share</span>
+                </button>
               </div>
 
               {/* TITLE */}
@@ -232,6 +250,26 @@ function InsightDetailContent() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
           </svg>
         </button>
+      )}
+
+      {/* SHARE MODAL */}
+      {shareOpen && (
+        <ShareModal
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          data={{
+            type: "insight",
+            title: insight.title,
+            subtitle: insight.subtitle,
+            category: insight.category,
+            tags: insight.tags || [],
+            author: authorName,
+            date: formattedDate,
+            readingTime: readingTime,
+            imageUrl: insight.hero_image_url,
+            excerpt: insight.body_html || insight.subtitle,
+          }}
+        />
       )}
     </div>
   );

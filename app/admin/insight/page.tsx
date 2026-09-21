@@ -17,7 +17,9 @@ import {
   X,
   BookOpen,
   Edit2,
+  Share2,
 } from "lucide-react";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
 
 /* ============================================================
    TYPES
@@ -118,6 +120,7 @@ export default function AdminInsightListPage() {
   >("created");
 
   const [previewInsight, setPreviewInsight] = useState<Insight | null>(null);
+  const [shareInsight, setShareInsight] = useState<Insight | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -962,6 +965,16 @@ export default function AdminInsightListPage() {
                               Preview
                             </button>
 
+                            {/* Share & Story */}
+                            <button
+                              type="button"
+                              onClick={() => setShareInsight(i)}
+                              className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-900 text-sm text-white hover:border-adidaya-red hover:text-adidaya-red transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            >
+                              <Share2 size={13} strokeWidth={1.75} />
+                              <span>Share</span>
+                            </button>
+
                             {/* Edit */}
                             <button
                               disabled={!editAllowed}
@@ -1054,6 +1067,27 @@ export default function AdminInsightListPage() {
           />
         )}
       </AnimatePresence>
+
+      {/* SHARE MODAL */}
+      {shareInsight && (
+        <ShareModal
+          isOpen={Boolean(shareInsight)}
+          onClose={() => setShareInsight(null)}
+          data={{
+            type: "insight",
+            title: shareInsight.title,
+            subtitle: shareInsight.subtitle,
+            category: shareInsight.category,
+            tags: shareInsight.tags || [],
+            author: shareInsight.authors?.[0]?.name || "Adidaya Studio",
+            date: formatDateLabel(shareInsight.published_at || shareInsight.created_at),
+            readingTime: shareInsight.reading_time,
+            imageUrl: shareInsight.hero_image_url,
+            excerpt: shareInsight.body_html || shareInsight.subtitle,
+            url: typeof window !== "undefined" ? `${window.location.origin}/insights/${shareInsight.slug || shareInsight.id}` : undefined,
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -4,7 +4,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
-import { Mail } from "lucide-react";
+import { Mail, Share2 } from "lucide-react";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
 
 interface Job {
   id: number;
@@ -27,6 +28,7 @@ export default function CareerSection() {
   const [openId, setOpenId] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareJob, setShareJob] = useState<Job | null>(null);
 
   // FETCH FUNCTION (dipisahkan biar bisa refetch)
   async function loadCareers() {
@@ -167,22 +169,34 @@ export default function CareerSection() {
                 </div>
 
                 {/* FOOTER */}
-                <div className="mt-6 text-xs sm:text-sm text-gray-400">
-                  <p className="mb-1">
-                    Please send your CV and portfolio with the following:
-                  </p>
-                  <p>
-                    <span className="font-semibold text-white">Email:</span>{" "}
-                    {job.email}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-white">Subject:</span>{" "}
-                    {job.subject}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-white">File:</span>{" "}
-                    {job.fileNote || "PDF, max. 5 MB"}
-                  </p>
+                <div className="mt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-xs sm:text-sm text-gray-400">
+                  <div>
+                    <p className="mb-1">
+                      Please send your CV and portfolio with the following:
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Email:</span>{" "}
+                      {job.email}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Subject:</span>{" "}
+                      {job.subject}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">File:</span>{" "}
+                      {job.fileNote || "PDF, max. 5 MB"}
+                    </p>
+                  </div>
+
+                  {/* SHARE POSITION BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => setShareJob(job)}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-xs text-white transition-all backdrop-blur-md cursor-pointer select-none shadow-sm hover:scale-105 active:scale-95 shrink-0"
+                  >
+                    <Share2 size={13} strokeWidth={1.75} />
+                    <span>Share Position & Story</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -217,6 +231,28 @@ export default function CareerSection() {
             <span>Send Email</span>
           </motion.a>
         </div>
+      )}
+
+      {/* SHARE MODAL */}
+      {shareJob && (
+        <ShareModal
+          isOpen={Boolean(shareJob)}
+          onClose={() => setShareJob(null)}
+          data={{
+            type: "career",
+            title: shareJob.title,
+            category: shareJob.division || "Career",
+            meta: [
+              shareJob.type,
+              shareJob.division,
+              shareJob.education,
+              shareJob.experience?.split("\n")[0] || "",
+              shareJob.deadline ? `Deadline: ${shareJob.deadline}` : "",
+            ].filter(Boolean),
+            excerpt: shareJob.description?.join(". ") || `Requirements: ${shareJob.skills || ""}`,
+            url: typeof window !== "undefined" ? `${window.location.origin}/networks#career` : undefined,
+          }}
+        />
       )}
     </div>
   );

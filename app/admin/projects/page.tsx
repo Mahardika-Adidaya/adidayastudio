@@ -15,7 +15,9 @@ import {
   X,
   Building2,
   Edit2,
+  Share2,
 } from "lucide-react";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
 
 import {
   DndContext,
@@ -53,6 +55,10 @@ type Project = {
 
   categories: string[] | null;
   subcategories: string[] | null;
+
+  site_area?: string | null;
+  building_area?: string | null;
+  building_floors?: string | null;
 
   team_members: { name: string; role: string }[] | null;
 
@@ -109,6 +115,7 @@ function SortableProjectItem({
   onTogglePublish,
   onEdit,
   onDelete,
+  onShare,
   role,
 }: {
   project: Project;
@@ -118,6 +125,7 @@ function SortableProjectItem({
   onTogglePublish: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onShare: () => void;
   role: string | null | undefined;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -300,6 +308,42 @@ function SortableProjectItem({
                   </div>
                 </div>
 
+                {/* Specifications */}
+                {(project.site_area || project.building_area || project.building_floors) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                    {project.site_area && (
+                      <div>
+                        <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
+                          Site Area
+                        </p>
+                        <p className="mt-0.5 text-xs text-white font-medium">
+                          {project.site_area}
+                        </p>
+                      </div>
+                    )}
+                    {project.building_area && (
+                      <div>
+                        <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
+                          Building Area
+                        </p>
+                        <p className="mt-0.5 text-xs text-white font-medium">
+                          {project.building_area}
+                        </p>
+                      </div>
+                    )}
+                    {project.building_floors && (
+                      <div>
+                        <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
+                          Floors
+                        </p>
+                        <p className="mt-0.5 text-xs text-white font-medium">
+                          {project.building_floors}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Team Members */}
                 <div>
                   <p className="text-[11px] text-neutral-500 uppercase tracking-[0.16em]">
@@ -327,6 +371,16 @@ function SortableProjectItem({
                     className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-900 text-sm hover:border-neutral-500"
                   >
                     Preview
+                  </button>
+
+                  {/* Share & Story */}
+                  <button
+                    type="button"
+                    onClick={onShare}
+                    className="px-5 py-2 rounded-full border border-neutral-700 bg-neutral-900 text-sm text-white hover:border-adidaya-red hover:text-adidaya-red transition flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Share2 size={13} strokeWidth={1.75} />
+                    <span>Share</span>
                   </button>
 
                   {/* Edit */}
@@ -395,6 +449,7 @@ export default function AdminProjectListPage() {
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [previewProject, setPreviewProject] = useState<Project | null>(null);
+  const [shareProject, setShareProject] = useState<Project | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -999,6 +1054,7 @@ export default function AdminProjectListPage() {
                       router.push(`/admin/projects/edit?id=${project.id}`)
                     }
                     onDelete={() => deleteProject(project)}
+                    onShare={() => setShareProject(project)}
                     role={profile?.role}
                   />
                 ))}
@@ -1021,6 +1077,45 @@ export default function AdminProjectListPage() {
             />
           )}
         </AnimatePresence>
+
+        {/* SHARE MODAL */}
+        {shareProject && (
+          <ShareModal
+            isOpen={Boolean(shareProject)}
+            onClose={() => setShareProject(null)}
+            data={{
+              type: "project",
+              title: shareProject.project_name,
+              category: shareProject.categories?.[0] || "Architecture",
+              tags: shareProject.subcategories || [],
+              location:
+                shareProject.city && shareProject.country
+                  ? `${shareProject.city}, ${shareProject.country}`
+                  : null,
+              year: shareProject.year_start
+                ? `${shareProject.year_start}${
+                    shareProject.is_ongoing
+                      ? " – Now"
+                      : shareProject.year_end
+                      ? ` – ${shareProject.year_end}`
+                      : ""
+                  }`
+                : null,
+              status: shareProject.status,
+              meta: [
+                shareProject.city && shareProject.country
+                  ? `${shareProject.city}, ${shareProject.country}`
+                  : "",
+                shareProject.year_start ? `${shareProject.year_start}` : "",
+                shareProject.site_area ? `Site: ${shareProject.site_area}` : "",
+                shareProject.building_area ? `Building: ${shareProject.building_area}` : "",
+                shareProject.building_floors ? `${shareProject.building_floors}` : "",
+              ].filter(Boolean),
+              imageUrl: shareProject.hero_image,
+              url: typeof window !== "undefined" ? `${window.location.origin}/projects/${shareProject.slug || shareProject.id}` : undefined,
+            }}
+          />
+        )}
       </div>
     );
   }

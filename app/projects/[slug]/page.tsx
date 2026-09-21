@@ -5,6 +5,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import ProjectGallery from "@/components/ProjectGallery";
+import ShareModal, { ShareItemData } from "@/components/ui/ShareModal";
+import { Share2 } from "lucide-react";
 
 // Slugify for category/subcategory links
 const slugify = (t: string) =>
@@ -21,6 +23,7 @@ function ProjectDetailContent() {
 
   const [progress, setProgress] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   /* ============================
       SCROLL EVENT
@@ -47,8 +50,12 @@ function ProjectDetailContent() {
       // Primary query
       let query = supabase.from("projects").select("*");
 
-      if (slug) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+      if (isUuid) {
         query = query.or(`slug.eq.${slug},id.eq.${slug}`);
+      } else {
+        query = query.eq("slug", slug);
       }
 
       if (!isPreview) {
@@ -59,11 +66,13 @@ function ProjectDetailContent() {
 
       // If not found with default filter and preview mode is active, try fallback ilike
       if (!proj && isPreview && slug) {
-        const { data: fallbackProj } = await supabase
-          .from("projects")
-          .select("*")
-          .or(`slug.ilike.${slug},id.eq.${slug}`)
-          .maybeSingle();
+        let fallbackQuery = supabase.from("projects").select("*");
+        if (isUuid) {
+          fallbackQuery = fallbackQuery.or(`slug.ilike.${slug},id.eq.${slug}`);
+        } else {
+          fallbackQuery = fallbackQuery.ilike("slug", slug);
+        }
+        const { data: fallbackProj } = await fallbackQuery.maybeSingle();
         proj = fallbackProj;
       }
 
@@ -167,32 +176,42 @@ function ProjectDetailContent() {
           <div className="relative z-10 w-full pt-28 pb-12 sm:pb-14">
             <div className="max-w-4xl mx-auto px-6">
 
-              {/* CATEGORY & SUBCATEGORY */}
-              <div className="flex gap-2 mb-4 flex-wrap">
+              {/* CATEGORY & SUBCATEGORY & SHARE */}
+              <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
+                  {project.categories?.map((c: string) => (
+                    <Link
+                      key={`cat-${c}`}
+                      href={`/projects?category=${slugify(c)}&sub=all`}
+                      className="inline-block bg-adidaya-red px-4 py-1 rounded-full 
+                      text-[11px] uppercase tracking-[0.18em] hover:bg-adidaya-red/80 transition"
+                    >
+                      {c}
+                    </Link>
+                  ))}
 
-                {project.categories?.map((c: string) => (
-                  <Link
-                    key={`cat-${c}`}
-                    href={`/projects?category=${slugify(c)}&sub=all`}
-                    className="inline-block bg-adidaya-red px-4 py-1 rounded-full 
-                    text-[11px] uppercase tracking-[0.18em] hover:bg-adidaya-red/80 transition"
-                  >
-                    {c}
-                  </Link>
-                ))}
+                  {project.subcategories?.map((s: string) => (
+                    <Link
+                      key={`sub-${s}`}
+                      href={`/projects?category=all&sub=${slugify(s)}`}
+                      className="inline-block bg-neutral-900 px-4 py-1 rounded-full 
+                      text-[11px] uppercase tracking-[0.18em] border border-white/10 
+                      hover:border-adidaya-red transition"
+                    >
+                      {s}
+                    </Link>
+                  ))}
+                </div>
 
-                {project.subcategories?.map((s: string) => (
-                  <Link
-                    key={`sub-${s}`}
-                    href={`/projects?category=all&sub=${slugify(s)}`}
-                    className="inline-block bg-neutral-900 px-4 py-1 rounded-full 
-                    text-[11px] uppercase tracking-[0.18em] border border-white/10 
-                    hover:border-adidaya-red transition"
-                  >
-                    {s}
-                  </Link>
-                ))}
-
+                {/* SHARE BUTTON */}
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 text-xs text-white transition-all backdrop-blur-md cursor-pointer select-none shadow-sm hover:scale-105 active:scale-95 ml-auto sm:ml-0"
+                >
+                  <Share2 size={13} strokeWidth={1.75} />
+                  <span>Share</span>
+                </button>
               </div>
 
               {/* TITLE */}
@@ -220,11 +239,61 @@ function ProjectDetailContent() {
       ============================ */}
       <main className="max-w-4xl mx-auto px-6 pt-14 pb-28">
 
+        {/* SPECIFICATIONS (SITE AREA, BUILDING AREA, BUILDING / FLOORS) */}
+        {(project.site_area || project.building_area || project.building_floors || project.floors_count) && (
+          <section className="mb-10 p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <h3 className="text-xs uppercase tracking-[0.2em] text-neutral-400 mb-4 font-semibold">
+              Project Specifications
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {project.site_area && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-neutral-400 mb-1.5 font-medium">
+                    Site Area
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-white tracking-tight">
+                    {project.site_area}
+                    {!project.site_area.includes("m²") && !project.site_area.toLowerCase().includes("sqm") && (
+                      <span className="text-xs text-neutral-400 font-normal ml-1">m²</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              {project.building_area && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-neutral-400 mb-1.5 font-medium">
+                    Building Area
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-white tracking-tight">
+                    {project.building_area}
+                    {!project.building_area.includes("m²") && !project.building_area.toLowerCase().includes("sqm") && (
+                      <span className="text-xs text-neutral-400 font-normal ml-1">m²</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              {(project.building_floors || project.floors_count) && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-neutral-400 mb-1.5 font-medium">
+                    Floors
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-white tracking-tight">
+                    {project.building_floors || project.floors_count}
+                    {/^\d+$/.test(String(project.building_floors || project.floors_count).trim()) && (
+                      <span className="text-xs text-neutral-400 font-normal ml-1">Floors</span>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* TEAM */}
         {project.team_members?.length > 0 && (
           <section className="mb-16">
             <h3 className="text-xs uppercase tracking-[0.18em] text-gray-500 mb-4">
-              Team
+              Team Credits
             </h3>
 
             <div className="space-y-2 mb-6">
@@ -284,6 +353,30 @@ function ProjectDetailContent() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
           </svg>
         </button>
+      )}
+
+      {/* SHARE MODAL */}
+      {shareOpen && (
+        <ShareModal
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          data={{
+            type: "project",
+            title: project.project_name,
+            category: project.categories?.[0] || "Architecture",
+            tags: project.subcategories || [],
+            location,
+            year: yearLabel,
+            status: project.status,
+            meta: [
+              project.site_area ? `Site: ${project.site_area}` : "",
+              project.building_area ? `Building: ${project.building_area}` : "",
+              project.building_floors || project.floors_count ? `${project.building_floors || project.floors_count}` : "",
+            ].filter(Boolean),
+            imageUrl: hero,
+            excerpt: project.description_html,
+          }}
+        />
       )}
     </div>
   );
