@@ -857,24 +857,27 @@ export default function VirtualIdCardPage({
             />
           </div>
 
-          {/* 3. OPTIONAL PERSON CUTOUT/PORTRAIT PHOTO (PROMINENT & FILLING RIGHT SIDE) */}
+          {/* 3. OPTIONAL PERSON CUTOUT/PORTRAIT PHOTO (PROMINENT & ALIGNED TO RIGHT SIDE) */}
           {(cardPhotoBase64 || person.image_url) && !person.image_url?.includes("logo-adidaya-red") && (
-            <div className="absolute right-0 bottom-0 w-[78%] pointer-events-none z-[5] flex items-end justify-end overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-[5] flex items-end justify-end overflow-hidden">
               <img
                 src={cardPhotoBase64 || person.image_url!}
                 alt={person.name}
                 crossOrigin="anonymous"
                 style={{
-                  height: "450px",
+                  height: "460px",
                   maxWidth: "none",
                 }}
-                className="object-contain object-bottom block shrink-0 drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]"
+                className="object-contain object-bottom block shrink-0 drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] translate-x-[22%]"
               />
             </div>
           )}
 
+          {/* 3.5. SUBTLE BOTTOM-LEFT GRADIENT FOR TEXT & QR READABILITY */}
+          <div className="absolute inset-0 pointer-events-none z-[7] bg-gradient-to-tr from-black/80 via-black/25 to-transparent" />
+
           {/* 4. BOTTOM-LEFT OVERLAY (NAME, POSITION, NIP, QR CODE) */}
-          <div className="z-10 mt-auto text-left relative flex flex-col items-start max-w-[55%]">
+          <div className="z-10 mt-auto text-left relative flex flex-col items-start max-w-[60%]">
             <h2 className="text-base font-bold text-white tracking-tight leading-snug drop-shadow-md">
               {person.name}
             </h2>
