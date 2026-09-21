@@ -577,6 +577,13 @@ loadGallery();
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 pb-48 pt-12 md:flex-row md:px-8 md:pb-56">
           {/* ============= LEFT: FORM ============= */}
           <div className="w-full md:w-2/3">
+            {/* BREADCRUMB */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
+                Admin • Projects
+              </span>
+            </div>
+
             <h1 className="mb-2 text-3xl font-semibold text-white">
               <span className="mr-2 text-adidaya-red">*</span>
               {mode === "edit" ? "Edit Project" : "Create New Project"}

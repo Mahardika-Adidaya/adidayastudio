@@ -157,7 +157,7 @@ export default function AdminContactPage() {
       {/* 1. HEADER */}
       <header className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs text-adidaya-text-muted">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
             Admin • Network • Contact
           </span>
         </div>

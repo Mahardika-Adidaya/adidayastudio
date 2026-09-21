@@ -333,8 +333,8 @@ export default function EditInsightPage() {
 
         {/* HEADER */}
         <div>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-            Admin • Insight
+          <p className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
+            Admin • Insights
           </p>
           <h1 className="mt-3 text-3xl font-semibold">
             <span className="mr-2 text-[#E53935]">*</span>Edit Insight

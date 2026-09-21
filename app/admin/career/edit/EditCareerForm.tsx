@@ -235,6 +235,13 @@ export default function EditCareerForm() {
     <div className="min-h-screen bg-black pb-48 md:pb-56 pt-6 text-gray-100 font-sans">
       <div className="mx-auto flex w-full max-w-5xl flex-col px-4">
         
+        {/* BREADCRUMB */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-adidaya-text-muted font-mono">
+            Admin • Network • Career
+          </span>
+        </div>
+
         {/* TITLE */}
         <h1 className="mb-2 text-3xl font-semibold text-white">
           <span className="mr-2 text-adidaya-red">*</span>
