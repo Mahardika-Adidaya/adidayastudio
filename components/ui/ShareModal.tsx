@@ -468,25 +468,27 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                   </div>
                 </div>
 
-                {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-[7.5px]">
+                {/* STRUCTURED CARD: TYPE, EXPERIENCE, DEADLINE (ROW 1), EDUCATION (ROW 2), SKILL (ROW 3) */}
+                <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-[7.5px]">
                   <div>
                     <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">TYPE</span>
                     <span className="font-semibold text-neutral-100 block truncate">{data.jobType || "Full time"}</span>
                   </div>
                   <div>
-                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DEADLINE</span>
-                    <span className="font-semibold text-adidaya-red block truncate">{data.deadline || "Open"}</span>
-                  </div>
-                  <div>
-                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EDUCATION</span>
-                    <span className="font-semibold text-neutral-100 block truncate">{data.education || "S-1 — Architecture"}</span>
-                  </div>
-                  <div>
                     <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EXPERIENCE</span>
                     <span className="font-semibold text-neutral-100 block truncate">{data.experience || "0–1 year"}</span>
                   </div>
-                  <div className="col-span-2 pt-0.5">
+                  <div>
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">DEADLINE</span>
+                    <span className="font-semibold text-adidaya-red block truncate">{data.deadline || "Open"}</span>
+                  </div>
+                  <div className="col-span-3 pt-0.5">
+                    <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">EDUCATION</span>
+                    <span className="font-semibold text-neutral-100 block leading-tight">
+                      {data.education || "S-1 — Architecture"}
+                    </span>
+                  </div>
+                  <div className="col-span-3 pt-0.5">
                     <span className="text-[6px] uppercase tracking-wider text-neutral-400 font-bold block">SKILL</span>
                     <span className="font-semibold text-neutral-100 block leading-tight">
                       {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
@@ -774,12 +776,12 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 </div>
               </div>
 
-              {/* 2-COLUMN STRUCTURED CARD: TYPE, DEADLINE, EDUCATION, EXPERIENCE, SKILL */}
+              {/* 3-COLUMN STRUCTURED CARD: TYPE, EXPERIENCE, DEADLINE (ROW 1), EDUCATION (ROW 2), SKILL (ROW 3) */}
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "24px 36px",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: "24px 28px",
                   backgroundColor: "rgba(255, 255, 255, 0.04)",
                   border: "1px solid rgba(255, 255, 255, 0.12)",
                   borderRadius: 24,
@@ -791,18 +793,20 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                   <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.jobType || "Full time"}</span>
                 </div>
                 <div>
-                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
-                  <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
-                  <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.education || "S-1 — Architecture"}</span>
-                </div>
-                <div>
                   <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EXPERIENCE</span>
                   <span style={{ fontSize: 24, fontWeight: 700, color: "#F4F4F5" }}>{data.experience || "0–1 year"}</span>
                 </div>
-                <div style={{ gridColumn: "span 2", paddingTop: 4 }}>
+                <div>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>DEADLINE</span>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#E53935" }}>{data.deadline || "Open"}</span>
+                </div>
+                <div style={{ gridColumn: "span 3", paddingTop: 4 }}>
+                  <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>EDUCATION</span>
+                  <span style={{ fontSize: 23, fontWeight: 700, color: "#F4F4F5", lineHeight: 1.4 }}>
+                    {data.education || "S-1 — Architecture"}
+                  </span>
+                </div>
+                <div style={{ gridColumn: "span 3", paddingTop: 4 }}>
                   <span style={{ fontSize: 16, textTransform: "uppercase", letterSpacing: "0.12em", color: "#A1A1AA", fontWeight: 700, display: "block", marginBottom: 6 }}>SKILL</span>
                   <span style={{ fontSize: 23, fontWeight: 700, color: "#F4F4F5", lineHeight: 1.4 }}>
                     {formatSkills(data.skills) || "Archicad, AutoCAD, SketchUp"}
