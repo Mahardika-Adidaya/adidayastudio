@@ -268,6 +268,7 @@ function InsightDetailContent() {
             readingTime: readingTime,
             imageUrl: insight.hero_image_url,
             excerpt: insight.body_html || insight.subtitle,
+            url: typeof window !== "undefined" ? window.location.href : undefined,
           }}
         />
       )}

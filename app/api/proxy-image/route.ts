@@ -9,7 +9,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(imageUrl, {
+    let targetUrl = imageUrl;
+    if (targetUrl.startsWith("/")) {
+      const origin = request.nextUrl.origin;
+      targetUrl = `${origin}${targetUrl}`;
+    }
+
+    const res = await fetch(targetUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; AdidayaStudio/1.0)",
       },

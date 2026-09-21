@@ -77,10 +77,13 @@ function AdidayaLogoIcon({
 }
 
 async function fetchImageAsBase64(url: string): Promise<string> {
+  if (!url) return "";
   if (url.startsWith("data:")) return url;
   try {
-    const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl);
+    const fetchUrl = url.startsWith("/")
+      ? url
+      : `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    const res = await fetch(fetchUrl);
     if (!res.ok) throw new Error(`Proxy error: ${res.statusText}`);
     const blob = await res.blob();
     return await new Promise<string>((resolve, reject) => {
@@ -119,7 +122,7 @@ async function ensureAllImagesLoaded(element: HTMLElement) {
 
 export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [qrSvg, setQrSvg] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
   const [base64Image, setBase64Image] = useState<string | null>(null);
 
@@ -147,18 +150,18 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
   const currentUrl = getCanonicalUrl(data?.url);
 
-  // Generate QR Code data URL immediately
+  // Generate QR Code as SVG vector for 100% reliable rendering
   useEffect(() => {
     if (isOpen && currentUrl) {
-      QRCode.toDataURL(currentUrl, {
-        width: 400,
+      QRCode.toString(currentUrl, {
+        type: "svg",
         margin: 1,
         color: {
           dark: "#000000",
           light: "#FFFFFF",
         },
       })
-        .then((url) => setQrDataUrl(url))
+        .then((svg) => setQrSvg(svg))
         .catch((err) => console.error("QR Code Error:", err));
     }
   }, [isOpen, currentUrl]);
@@ -180,14 +183,20 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
   if (!isOpen || !data) return null;
 
-  // Clean excerpt text
-  const cleanExcerpt = stripHtml(data.excerpt || data.subtitle || "");
+  // Clean excerpt text (deduplicate if same as subtitle)
+  let rawExcerpt = data.excerpt || "";
+  if (data.subtitle && rawExcerpt.trim() === data.subtitle.trim()) {
+    rawExcerpt = "";
+  }
+  const cleanExcerpt = stripHtml(rawExcerpt);
   const truncatedExcerpt =
     cleanExcerpt.length > 280
       ? cleanExcerpt.slice(0, 275) + "..."
       : cleanExcerpt ||
         (data.type === "career"
           ? "Explore this open position at Adidaya Studio and join our collective architecture & design journey."
+          : data.type === "insight"
+          ? "Discover thoughtful perspectives, design philosophies, and architectural discourse at Adidaya Studio."
           : "Discover more project details, documentation, and architectural philosophies at Adidaya Studio.");
 
   const categoryLabel =
@@ -212,7 +221,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
     }
   } else if (data.type === "insight") {
     if (data.author) metaChips.push(data.author);
-    if (data.date) metaChips.push(data.date);
+    if (data.date && data.date !== "—") metaChips.push(data.date);
     if (data.readingTime) metaChips.push(`${data.readingTime} min read`);
   } else if (data.type === "career") {
     if (data.meta && Array.isArray(data.meta)) {
@@ -242,14 +251,14 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
       setBase64Image(b64);
     }
 
-    // 2. Ensure QR Code is ready
-    if (!qrDataUrl && currentUrl) {
-      const qr = await QRCode.toDataURL(currentUrl, {
-        width: 400,
+    // 2. Ensure QR Code SVG is ready
+    if (!qrSvg && currentUrl) {
+      const svg = await QRCode.toString(currentUrl, {
+        type: "svg",
         margin: 1,
         color: { dark: "#000000", light: "#FFFFFF" },
       });
-      setQrDataUrl(qr);
+      setQrSvg(svg);
     }
 
     // 3. Ensure all <img> elements inside exportStoryRef are loaded & decoded
@@ -413,20 +422,27 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               )}
             </div>
 
-            {/* LOWER CONTENT: TITLE, METADATA CHIPS & TEASER TEXT */}
-            <div className="relative z-10 px-4 mt-auto mb-2.5 space-y-2">
-              {/* TITLE */}
-              <h3 className="text-base sm:text-[17px] font-bold text-white leading-tight tracking-tight line-clamp-2 drop-shadow-md">
-                {data.title}
-              </h3>
+            {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
+            <div className="relative z-10 px-4 mt-auto mb-2 space-y-1.5">
+              {/* TITLE & SUBTITLE */}
+              <div>
+                <h3 className="text-base sm:text-[17px] font-bold text-white leading-tight tracking-tight line-clamp-2 drop-shadow-md">
+                  {data.title}
+                </h3>
+                {data.subtitle && (
+                  <p className="text-[10px] sm:text-[10.5px] font-medium text-neutral-300 leading-snug line-clamp-1 mt-0.5">
+                    {data.subtitle}
+                  </p>
+                )}
+              </div>
 
-              {/* META CHIPS (3 CLEAN CHIPS) */}
+              {/* META CHIPS */}
               {metaChips.length > 0 && (
                 <div className="flex flex-wrap gap-1 text-[8px] text-neutral-300">
                   {metaChips.map((chip, idx) => (
                     <span
                       key={idx}
-                      className="px-2.5 py-0.5 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-neutral-200 font-medium"
+                      className="px-2 py-0.5 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-neutral-200 font-medium"
                     >
                       {chip}
                     </span>
@@ -435,7 +451,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               )}
 
               {/* SPILL TEASER WITH BLUR FADE OVERLAY */}
-              <div className="relative overflow-hidden max-h-[80px]">
+              <div className="relative overflow-hidden max-h-[76px]">
                 <p className="text-[9.5px] sm:text-[10px] text-neutral-300 leading-relaxed line-clamp-3 font-normal">
                   {truncatedExcerpt}
                 </p>
@@ -469,15 +485,12 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 </div>
               </div>
 
-              {/* Right: Big QR Code (outside pill) */}
-              {qrDataUrl && (
-                <div className="p-1 rounded-lg bg-white border border-white/30 shadow-md shrink-0">
-                  <img
-                    src={qrDataUrl}
-                    alt="QR Code"
-                    className="w-10 h-10 object-contain block"
-                  />
-                </div>
+              {/* Right: Big QR Code (vector SVG, 100% reliable) */}
+              {qrSvg && (
+                <div
+                  className="w-10 h-10 rounded-lg bg-white p-1 border border-white/30 shadow-md shrink-0 flex items-center justify-center overflow-hidden [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+                  dangerouslySetInnerHTML={{ __html: qrSvg }}
+                />
               )}
             </div>
           </div>
@@ -581,6 +594,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
                 <img
                   src={activeImage}
                   alt={data.title}
+                  crossOrigin="anonymous"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -627,31 +641,47 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             )}
           </div>
 
-          {/* LOWER CONTENT: TITLE, METADATA CHIPS & TEASER TEXT */}
+          {/* LOWER CONTENT: TITLE, SUBTITLE, METADATA CHIPS & TEASER TEXT */}
           <div
             style={{
               position: "relative",
               zIndex: 10,
               padding: "0 65px",
               marginTop: "auto",
-              marginBottom: 26,
+              marginBottom: 24,
             }}
           >
-            {/* TITLE */}
-            <h1
-              style={{
-                fontSize: 54,
-                fontWeight: 800,
-                lineHeight: 1.18,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                margin: "0 0 20px 0",
-              }}
-            >
-              {data.title}
-            </h1>
+            {/* TITLE & SUBTITLE */}
+            <div style={{ marginBottom: 18 }}>
+              <h1
+                style={{
+                  fontSize: 52,
+                  fontWeight: 800,
+                  lineHeight: 1.18,
+                  letterSpacing: "-0.02em",
+                  color: "#FFFFFF",
+                  margin: data.subtitle ? "0 0 10px 0" : "0",
+                }}
+              >
+                {data.title}
+              </h1>
 
-            {/* META CHIPS (3 CLEAN CHIPS) */}
+              {data.subtitle && (
+                <p
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 500,
+                    lineHeight: 1.35,
+                    color: "#D4D4D8",
+                    margin: 0,
+                  }}
+                >
+                  {data.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* META CHIPS (CLEAN CHIPS) */}
             {metaChips.length > 0 && (
               <div
                 style={{
@@ -810,24 +840,27 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
               </div>
             </div>
 
-            {/* Right: Big QR Code (outside pill) */}
-            {qrDataUrl && (
+            {/* Right: Big QR Code (vector SVG, 100% reliable) */}
+            {qrSvg && (
               <div
                 style={{
                   backgroundColor: "#FFFFFF",
-                  padding: 8,
-                  borderRadius: 16,
+                  padding: 10,
+                  borderRadius: 18,
                   border: "2px solid rgba(255, 255, 255, 0.4)",
                   boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+                  width: 130,
+                  height: 130,
+                  boxSizing: "border-box",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   flexShrink: 0,
                 }}
-              >
-                <img
-                  src={qrDataUrl}
-                  alt="QR Code"
-                  style={{ width: 110, height: 110, display: "block" }}
-                />
-              </div>
+                dangerouslySetInnerHTML={{
+                  __html: qrSvg.replace(/<svg /, '<svg style="width: 100%; height: 100%; display: block;" '),
+                }}
+              />
             )}
           </div>
         </div>
